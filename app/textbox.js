@@ -5,11 +5,12 @@ import Tesseract from "tesseract.js";
 import {resetText,setRSVPText} from "app/redux/features/text-slice.js"
 import {useDispatch} from 'react-redux'
 import { useAppSelector } from "app/redux/store.js";
+import { auth } from "./firebaseConfig";
 function Textbox() {
   const [fileText, setFileText] = useState("");
   const [searchTerm, setsearchTerm] = useState("");
   const [textBox, settextBox] = useState("");
-
+  
   const dispatch=useDispatch();
 
   const handleFileUpload = (event) => {
@@ -99,7 +100,7 @@ function Textbox() {
   return {
     textBox,
     render:(<>
-
+      
       <div className="flex justify-center ">
         <div className="w-11/12 mb-4 border  border-gray-200 rounded-lg bg-gray-50 dark:bg-gray-700 dark:border-gray-600 ">
           <div className="flex items-center justify-between px-3 py-2 border-b dark:border-gray-600">
@@ -268,16 +269,7 @@ function Textbox() {
         </div>
       </div>
 
-      <div className="flex justify-center">
-        <Link
-          href="/rsvp"
-        
-          type="button"
-          className="inline-flex items-center px-5 py-2.5 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800"
-        >
-          Finalize Text
-        </Link>
-      </div>
+
     </>)
   
               }
