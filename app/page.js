@@ -20,10 +20,10 @@ export default function Home() {
       if (auth.currentUser) {
         setEmail(auth?.currentUser.email);
         setUid(auth?.currentUser.uid)
-        createuserDocument()
+        
         console.log("yooooo")
       }
-    }, 400);
+    }, 500);
 
     return () => clearTimeout(timer);
   }, []);
@@ -42,11 +42,7 @@ export default function Home() {
   }
   const createuserDocument = async () => {
     try {
-      
-  
-      await setDoc(doc(db,'users',uid),{text:"lol"})
-     
-  
+      await setDoc(doc(db,'users',uid),{text:rsvpText,})
       console.log('Current text document created successfully!');
     } catch (error) {
       console.error('Error creating current text document:', error);
@@ -59,7 +55,7 @@ export default function Home() {
     
     <div className="mt-4 dark:text-gray-100"></div>
     {render}
-    
+    <button className="text-white" onClick={createuserDocument}>HELLO</button>
     <div className="flex justify-center">
         <Link
           href="/rsvp"
