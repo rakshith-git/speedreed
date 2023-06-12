@@ -1,12 +1,23 @@
 "use client";
 import React from "react";
 import { auth, googleProvider } from "./firebaseConfig.js";
+import { useState,useEffect } from "react";
 import {
   signInWithPopup,
   setPersistence,
   browserLocalPersistence,
 } from "firebase/auth";
 function Topbar() {
+  const [isAuth, setIsAuth] = useState(false)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (auth.currentUser) {
+        setIsAuth(true)
+      }
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, []);
   return (
     <nav className="border-gray-200 bg-gray-50 dark:bg-gray-800 dark:border-gray-700">
       <div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-2">
@@ -143,7 +154,7 @@ function Topbar() {
             SpeedReed
           </span>
         </a>
-        {!auth.currentUser ? (
+        {!isAuth ? (
           <LoginButton />
         ) : (
           <>

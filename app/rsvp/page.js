@@ -59,7 +59,7 @@ export default function Home() {
     {
         setProgress(100);
         setIncrement(0);
-        setCurrentIndex(0);
+        setCurrentIndex(textArray.length-1);
     }    const intervalId = setInterval(() => {
       if (increment === 0 || count >= textArray.length - 1)
         return () => clearInterval(intervalId);
@@ -84,6 +84,10 @@ export default function Home() {
   
   function getSubstringFromArray(textArray, startIndex, endIndex) {
     // Validate input
+    if(startIndex<0)
+    startIndex=0;
+    if(endIndex >= textArray.length-1)
+    endIndex=textArray.length-1
     if (
       !Array.isArray(textArray) ||
       typeof startIndex !== 'number' ||
@@ -127,7 +131,7 @@ export default function Home() {
       <div className="flex justify-center">
         <label
           htmlFor="default-range"
-          className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+          className="block mb-4 text-sm font-medium text-gray-900 dark:text-white"
         >
           {rangeVal} Words/Minute
         </label>
