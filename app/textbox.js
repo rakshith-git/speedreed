@@ -10,9 +10,15 @@ function Textbox() {
   const [fileText, setFileText] = useState("");
   const [searchTerm, setsearchTerm] = useState("");
   const [textBox, settextBox] = useState("");
-  
+  const rsvpText = useAppSelector((state) => state.textReducer.value.text);
   const dispatch=useDispatch();
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      settextBox(rsvpText)
+    }, 400);
 
+    return () => clearTimeout(timer);
+  }, []);
   const handleFileUpload = (event) => {
     const file = event.target.files[0];
 
@@ -32,6 +38,7 @@ function Textbox() {
 
   useEffect(() => {
     dispatch(setRSVPText(textBox))
+    
   }, [textBox])
   
 

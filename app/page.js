@@ -9,6 +9,7 @@ import { useAppSelector } from "app/redux/store.js";
 import {doc,getDocs,collection,addDoc,setDoc,updateDoc} from 'firebase/firestore'
 
 export default function Home() {
+  
   const [email, setEmail] = useState("");
   const [uid, setUid] = useState("")
   const {render,textbox}=Textbox()
