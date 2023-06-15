@@ -17,7 +17,7 @@ import { db } from "../firebaseConfig";
 
 export default function Home() {
   let count = 0;
-  const { speak,cancel,speaking } = useSpeechSynthesis();
+
   const rsvpText = useAppSelector((state) => state.textReducer.value.text);
   const userRef = collection(db, "users");
   const [theText, setTheText] = useState("");
