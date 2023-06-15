@@ -18,6 +18,7 @@ import {
 import { signOut } from "firebase/auth";
 
 export default function Home() {
+  
   const [email, setEmail] = useState("");
   const [uid, setUid] = useState("");
   const [docCreated, setDocCreated] = useState(false);
