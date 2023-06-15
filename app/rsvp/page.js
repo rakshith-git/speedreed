@@ -4,6 +4,7 @@ import Textbox from "../textbox";
 import { useSelector } from "react-redux";
 import { useAppSelector } from "app/redux/store.js";
 import { auth } from "app/firebaseConfig.js";
+import { useSpeechSynthesis } from 'react-speech-kit';
 import {
   doc,
   getDoc,
@@ -16,14 +17,17 @@ import { db } from "../firebaseConfig";
 
 export default function Home() {
   let count = 0;
+  const { speak,cancel,speaking } = useSpeechSynthesis();
   const rsvpText = useAppSelector((state) => state.textReducer.value.text);
   const userRef = collection(db, "users");
   const [theText, setTheText] = useState("");
   const [rangeVal, setRangeVal] = useState(240);
+  const [speechVal, setSpeechVal] = useState(1);
+  const [isBionic, setIsBionic] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [increment, setIncrement] = useState(0);
-  const [progress, setProgress] = useState(0)
-  const [refrence, setRefrence] = useState("")
+  const [progress, setProgress] = useState(0);
+  const [refrence, setRefrence] = useState("");
   useEffect(() => {
     const timer = setTimeout(() => {
       if (auth.currentUser) {
@@ -38,6 +42,9 @@ export default function Home() {
     try {
       const userTextDoc = await getDoc(doc(db, "users", auth.currentUser.uid));
       setTheText(userTextDoc.data().text);
+      setSpeechVal(userTextDoc.data().defaultSpeech)
+      setIsBionic(userTextDoc.data().isBionic)
+      
       console.log(theText);
     } catch (error) {}
   };
@@ -55,58 +62,55 @@ export default function Home() {
   const textArray = convertStringToArray(theText !== "" ? theText : rsvpText);
 
   useEffect(() => {
-    if(progress>=100)
-    {
-        setProgress(100);
-        setIncrement(0);
-        setCurrentIndex(textArray.length-1);
-    }    const intervalId = setInterval(() => {
+    if (progress >= 100) {
+      setProgress(100);
+      setIncrement(0);
+      setCurrentIndex(textArray.length - 1);
+    }
+    const intervalId = setInterval(() => {
       if (increment === 0 || count >= textArray.length - 1)
         return () => clearInterval(intervalId);
 
       setCurrentIndex((currentIndex) => {
-        setProgress(1+((currentIndex/textArray.length)*100))
+        setProgress(1 + (currentIndex / textArray.length) * 100);
         
         return currentIndex + increment;
-
       });
 
       count++;
     }, 60000 / rangeVal); // Change the interval time here to adjust the speed of the RSVP
     return () => clearInterval(intervalId);
-  }, [rangeVal, increment,progress]);
-  
+  }, [rangeVal, increment, progress]);
+
   useEffect(() => {
-  if(currentIndex%10==0)
-  setRefrence(getSubstringFromArray(textArray,currentIndex-10,currentIndex+10));
-    
-  }, [currentIndex])
-  
+    if (currentIndex % 10 == 0)
+      setRefrence(
+        getSubstringFromArray(textArray, currentIndex - 10, currentIndex + 10)
+      );
+  }, [currentIndex]);
+
   function getSubstringFromArray(textArray, startIndex, endIndex) {
     // Validate input
-    if(startIndex<0)
-    startIndex=0;
-    if(endIndex >= textArray.length-1)
-    endIndex=textArray.length-1
+    if (startIndex < 0) startIndex = 0;
+    if (endIndex >= textArray.length - 1) endIndex = textArray.length - 1;
     if (
       !Array.isArray(textArray) ||
-      typeof startIndex !== 'number' ||
-      typeof endIndex !== 'number' ||
+      typeof startIndex !== "number" ||
+      typeof endIndex !== "number" ||
       startIndex < 0 ||
       endIndex < 0 ||
       startIndex >= textArray.length ||
       endIndex >= textArray.length ||
       startIndex > endIndex
     ) {
-      return '';
+      return "";
     }
-  
+
     // Extract the substring
-    const substring = textArray.slice(startIndex, endIndex + 1).join(' ');
-  
+    const substring = textArray.slice(startIndex, endIndex + 1).join(" ");
+
     return substring;
   }
-
 
   return (
     <>
@@ -124,7 +128,7 @@ export default function Home() {
         <div className="w-10/12 bg-gray-200 rounded-full h-2.5 my-10 dark:bg-gray-700">
           <div
             className="bg-blue-600 h-2.5 rounded-full"
-            style={{ width: progress+"%" }}
+            style={{ width: progress + "%" }}
           />
         </div>
       </div>
@@ -141,7 +145,6 @@ export default function Home() {
         <input
           id="default-range"
           type="range"
-          
           min={100}
           max={1000}
           value={rangeVal}
@@ -153,9 +156,13 @@ export default function Home() {
         <button
           type="button"
           onClick={() => {
+            
             if (increment === 1) {
               setIncrement(0);
+              cancel()
+             
             } else {
+              
               setIncrement(1);
             }
           }}
@@ -165,14 +172,34 @@ export default function Home() {
         </button>
         <button
           type="button"
-          onClick={()=>{setProgress(0)
-            setCurrentIndex(0)
-            setIncrement(0)
-          count=0}}
+          onClick={() => {
+            setProgress(0);
+            setCurrentIndex(0);
+            setIncrement(0);
+            count = 0;
+            cancel()
+          }}
           className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"
         >
           Restart
         </button>
+        <button
+          type="button"
+          onClick={() => {
+            
+            if (speaking) {
+              
+              cancel()
+            } else {
+              speak({ text: getSubstringFromArray(textArray,currentIndex,textArray.length-1), rate: speechVal });
+              
+            }
+          }}
+          className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"
+        >
+          Speech
+        </button>
+        
       </div>
     </>
   );

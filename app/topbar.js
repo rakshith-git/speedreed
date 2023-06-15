@@ -2,22 +2,38 @@
 import React from "react";
 import { auth, googleProvider } from "./firebaseConfig.js";
 import { useState,useEffect } from "react";
+import {useRouter} from 'next/navigation'
 import {
   signInWithPopup,
   setPersistence,
   browserLocalPersistence,
 } from "firebase/auth";
+import { root } from "postcss";
 function Topbar() {
+  
   const [isAuth, setIsAuth] = useState(false)
+  const unsubscribe = auth.onAuthStateChanged((user) => {
+    if (user) {
+      // User is signed in, perform authorized actions
+      // For example, enable certain functionality or show authorized conten
+      
+    } else {
+      // User is not signed in, handle unauthorized actions
+      // For example, disable functionality or redirect to login
+      
+      console.log('User is not authorized.');
+    }
+  });
   useEffect(() => {
     const timer = setTimeout(() => {
       if (auth.currentUser) {
         setIsAuth(true)
+
       }
-    }, 400);
+    }, 1000);
 
     return () => clearTimeout(timer);
-  }, []);
+  }, [isAuth]);
   return (
     <nav className="border-gray-200 bg-gray-50 dark:bg-gray-800 dark:border-gray-700">
       <div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-2">
@@ -174,10 +190,12 @@ function Topbar() {
 export default Topbar;
 
 export function LoginButton() {
+  const router=useRouter()
   const signInwithGoogle = async () => {
     try {
       await signInWithPopup(auth, googleProvider);
       await setPersistence(result.user, browserLocalPersistence);
+      router.refresh()
     } catch (error) {
       console.log(error);
     }
