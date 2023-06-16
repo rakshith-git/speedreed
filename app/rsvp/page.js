@@ -23,7 +23,7 @@ export default function Home() {
   const [theText, setTheText] = useState("");
   const [rangeVal, setRangeVal] = useState(240);
   const [speechVal, setSpeechVal] = useState(1);
-  const [isBionic, setIsBionic] = useState(false);
+  const [isBionic, setIsBionic] = useState(0);
   const [speaking, setSpeaking] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [increment, setIncrement] = useState(0);
@@ -44,7 +44,7 @@ export default function Home() {
       const userTextDoc = await getDoc(doc(db, "users", auth.currentUser.uid));
       setTheText(userTextDoc.data().text);
       setSpeechVal(userTextDoc.data().defaultSpeech)
-      setIsBionic(userTextDoc.data().isBionic)
+      setIsBionic(userTextDoc.data().bionic)
       
       console.log(theText);
     } catch (error) {}
@@ -135,10 +135,8 @@ export default function Home() {
       <div className="flex justify-center mt-4 dark:text-gray-100">
         <h1>{refrence}</h1>
       </div>
-      <div className="flex justify-center">
-        <h2 className="text-6xl my-10 font-roboto dark:text-white">
-          {textArray[currentIndex]}
-        </h2>
+      <div className="flex justify-center my-8 text-white text-6xl font-roboto">
+        {(isBionic===1)?<Bionic word={textArray[currentIndex]}/>:textArray[currentIndex]}
       </div>
 
       <div className="flex justify-center">
@@ -212,3 +210,18 @@ export default function Home() {
     </>
   );
 }
+export function Bionic( {word} ) {
+  if(word===undefined){
+    word=""
+  }
+  const halfLength = Math.floor(word.length / 2);
+  const firstHalf = word.slice(0, halfLength);
+  const secondHalf = word.slice(halfLength);
+
+  return (
+    <div className="text-gray-400 text-6xl font-roboto">
+      <span className="text-white text-6xl font-roboto">{firstHalf}</span>
+      {secondHalf}
+    </div>
+  );
+};
