@@ -32,13 +32,12 @@ function Textbox() {
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      settextBox(rsvpText)
+      settextBox(rsvpText);
     }, 400);
     return () => clearTimeout(timer);
   }, []);
   useEffect(() => {
     dispatch(setRSVPText(textBox));
-    
   }, [textBox]);
 
   const handleImageUpload = (event) => {
@@ -102,7 +101,6 @@ function Textbox() {
     if (!response.ok) {
       settextBox("Failed to fetch summary");
       throw new Error("Failed to fetch summary");
-      
     }
 
     return response.text();
@@ -158,7 +156,12 @@ function Textbox() {
                         onChange={(e) => {
                           setsearchTerm(e.target.value);
                         }}
-                        className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 p-2.5  dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            handleSearch();
+                          }
+                        }}
+                        className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                         placeholder="Search Wiki"
                         required=""
                       />
