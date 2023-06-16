@@ -24,6 +24,7 @@ export default function Home() {
   const [rangeVal, setRangeVal] = useState(240);
   const [speechVal, setSpeechVal] = useState(1);
   const [isBionic, setIsBionic] = useState(false);
+  const [speaking, setSpeaking] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [increment, setIncrement] = useState(0);
   const [progress, setProgress] = useState(0);
@@ -111,7 +112,23 @@ export default function Home() {
 
     return substring;
   }
-
+  const handleSpeak = () => {
+    if ('speechSynthesis' in window) {
+      const synthesis = window.speechSynthesis;
+      const utterance = new SpeechSynthesisUtterance(getSubstringFromArray(textArray,currentIndex,textArray.length));
+      utterance.rate = speechVal;
+      synthesis.speak(utterance);
+      setSpeaking(true);
+    } else {
+      console.log('Speech synthesis is not supported in this browser.');
+    }
+  };
+  const handleStop = () => {
+    if ('speechSynthesis' in window && speaking) {
+      window.speechSynthesis.cancel();
+      setSpeaking(false);
+    }
+  };
   return (
     <>
       <h1>{textArray.length}</h1>
@@ -159,7 +176,7 @@ export default function Home() {
             
             if (increment === 1) {
               setIncrement(0);
-              cancel()
+              window.speechSynthesis.cancel()
              
             } else {
               
@@ -177,7 +194,7 @@ export default function Home() {
             setCurrentIndex(0);
             setIncrement(0);
             count = 0;
-            cancel()
+            window.speechSynthesis.cancel()
           }}
           className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"
         >
@@ -185,7 +202,7 @@ export default function Home() {
         </button>
         <button
           type="button"
-          
+          onClick={(speaking===false)?handleSpeak:handleStop}
           className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"
         >
           Speech
