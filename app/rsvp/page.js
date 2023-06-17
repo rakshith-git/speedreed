@@ -44,6 +44,7 @@ export default function Home() {
       const userTextDoc = await getDoc(doc(db, "users", auth.currentUser.uid));
       setTheText(userTextDoc.data().text);
       setSpeechVal(userTextDoc.data().defaultSpeech)
+      setRangeVal(userTextDoc.data().defaultSpeed)
       setIsBionic(userTextDoc.data().bionic)
       
       console.log(theText);
