@@ -27,6 +27,7 @@ export default function RootLayout({ children }) {
           <Navbar />
           {children}
         </ReduxProvider>
+        <link rel="icon" href="/favicon.ico" sizes="any" />
         <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@500&display=swap" rel="stylesheet"></link>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.6.5/flowbite.min.js"></script>
         
