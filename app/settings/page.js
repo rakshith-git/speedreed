@@ -56,6 +56,7 @@ function Home() {
 
   return (
     <>
+    <h1 className="text-white">Login to use defaults</h1>
       <label
         htmlFor="default-range"
         className="flex my-4 mx-4 text-xl font-medium text-gray-900 dark:text-white"
