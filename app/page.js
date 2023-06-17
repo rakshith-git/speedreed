@@ -102,6 +102,18 @@ function both(){
           Finalize Text
         </Link>
       </div>
+      <div>
+  {/* ads1 */}
+  <ins
+    className="adsbygoogle"
+    style={{ display: "block" }}
+    data-ad-client="ca-pub-8376660329507482"
+    data-ad-slot={8334267816}
+    data-ad-format="auto"
+    data-full-width-responsive="true"
+  />
+</div>
+
     </>
   );
 }
