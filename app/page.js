@@ -18,6 +18,7 @@ import {
 import { signOut } from "firebase/auth";
 
 export default function Home() {
+  
   const [email, setEmail] = useState("");
   const [uid, setUid] = useState("");
   const [docCreated, setDocCreated] = useState(false);
@@ -52,6 +53,8 @@ export default function Home() {
     try {
       await updateDoc(doc(db, "users", uid), {
         text: rsvpText,
+
+        
       });
     } catch (error) {
       console.log(error);
@@ -78,42 +81,26 @@ export default function Home() {
       console.log(error);
     }
   };
-  function both() {
-    createuserDocument();
-    uploadtofb();
-  }
+function both(){
+  createuserDocument()
+  uploadtofb()
+}
   return (
     <>
+     
+
       <div className="mt-4 dark:text-gray-100"></div>
       {render}
 
       <div className="flex justify-center">
         <Link
           href="/rsvp"
-          onClick={docCreated === true ? uploadtofb : both}
+          onClick={(docCreated===true)?uploadtofb:both}
           type="button"
           className="inline-flex items-center px-5 py-2.5 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800"
         >
           Finalize Text
         </Link>
-      </div>
-      <div>
-        <script
-          async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8376660329507482"
-          crossorigin="anonymous"
-        ></script>
-
-        <ins
-          className="adsbygoogle"
-          style="display:block"
-          
-          data-ad-client="ca-pub-8376660329507482"
-          data-ad-slot="8334267816"
-          data-ad-format="auto"
-          data-full-width-responsive="true"
-        ></ins>
-        <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
       </div>
     </>
   );
