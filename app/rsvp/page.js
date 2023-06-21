@@ -29,28 +29,34 @@ export default function Home() {
   const [increment, setIncrement] = useState(0);
   const [progress, setProgress] = useState(0);
   const [refrence, setRefrence] = useState("");
+  const [extraTime, setExtraTime] = useState(0)
+  // useEffect(() => {
+  //   const timer = setTimeout(() => {
+  //     if (auth.currentUser) {
+  //       getText();
+  //       console.log("hloo");
+  //     }
+  //   }, 400);
+
+  //   return () => clearTimeout(timer);
+  // }, []);
+  
   useEffect(() => {
-    const timer = setTimeout(() => {
-      if (auth.currentUser) {
-        getText();
-        console.log("hloo");
+    const getText = async () => {
+      try {
+        const userTextDoc = await getDoc(doc(db, "users", auth.currentUser.uid));
+        setTheText(userTextDoc.data().text);
+        setSpeechVal(userTextDoc.data().defaultSpeech);
+        setRangeVal(userTextDoc.data().defaultSpeed);
+        setIsBionic(userTextDoc.data().bionic);
+        console.log(theText);
+      } catch (error) {
+        console.log(error);
       }
-    }, 400);
-
-    return () => clearTimeout(timer);
+    };
+  
+    getText();
   }, []);
-  const getText = async () => {
-    try {
-      const userTextDoc = await getDoc(doc(db, "users", auth.currentUser.uid));
-      setTheText(userTextDoc.data().text);
-      setSpeechVal(userTextDoc.data().defaultSpeech)
-      setRangeVal(userTextDoc.data().defaultSpeed)
-      setIsBionic(userTextDoc.data().bionic)
-      
-      console.log(theText);
-    } catch (error) {}
-  };
-
   function convertStringToArray(text) {
     // Replace new lines with spaces
     const normalizedText = text.replace(/\n/g, " ");
@@ -69,6 +75,10 @@ export default function Home() {
       setIncrement(0);
       setCurrentIndex(textArray.length - 1);
     }
+    if(textArray[currentIndex]){
+    (textArray[currentIndex].includes('.'))?setExtraTime((60000 / rangeVal)*4):setExtraTime(0);
+    
+    }
     const intervalId = setInterval(() => {
       if (increment === 0 || count >= textArray.length - 1)
         return () => clearInterval(intervalId);
@@ -80,7 +90,7 @@ export default function Home() {
       });
 
       count++;
-    }, 60000 / rangeVal); // Change the interval time here to adjust the speed of the RSVP
+    }, (60000 / rangeVal)+extraTime); // Change the interval time here to adjust the speed of the RSVP
     return () => clearInterval(intervalId);
   }, [rangeVal, increment, progress]);
 

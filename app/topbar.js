@@ -3,7 +3,7 @@ import React from "react";
 import { auth, googleProvider } from "./firebaseConfig.js";
 import { useState,useEffect } from "react";
 import {useRouter} from 'next/navigation'
-
+import logo from 'app/speedreedLogo.svg'
 import {
   signInWithPopup,
   setPersistence,
@@ -15,19 +15,20 @@ function Topbar() {
   const [isAuth, setIsAuth] = useState(false)
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      if (auth.currentUser) {
-        setIsAuth(true)
-
-      }
-    }, 1000);
-
-    return () => clearTimeout(timer);
-  }, [isAuth]);
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      setIsAuth(!!user);
+    });
+  
+    // Cleanup the listener when the component unmounts
+    return () => unsubscribe();
+  }, []);
+  
   return (
     <nav className="border-gray-200 bg-gray-50 dark:bg-gray-800 dark:border-gray-700">
       <div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-2">
+        
         <a href="#" className="flex items-center">
+        
           <svg
             xmlns="http://www.w3.org/2000/svg"
             xmlnsXlink="http://www.w3.org/1999/xlink"

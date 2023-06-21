@@ -11,16 +11,7 @@ import {
 import { auth, db } from "../firebaseConfig";
 const userRef = collection(db, "users");
 function Home() {
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (auth.currentUser) {
-        getData();
-        console.log("hoiii");
-      }
-    }, 400);
 
-    return () => clearTimeout(timer);
-  }, []);
   const [rangeVal, setRangeVal] = useState(240);
   const [speechVal, setSpeechVal] = useState(3);
   const [bionicVal, setBionicVal] = useState(0);
@@ -41,18 +32,36 @@ function Home() {
       console.log(error);
     }
   };
+useEffect(() => {
   const getData = async () => {
     try {
-      const userTextDoc = await getDoc(doc(db, "users", auth.currentUser.uid));
-      setRangeVal(userTextDoc.data().defaultSpeed);
-      setSpeechVal(userTextDoc.data().defaultSpeech);
-      setBionicVal(userTextDoc.data().bionic);
-
-      console.log();
+      const user = auth.currentUser;
+      if (user) {
+        const userDocRef = doc(db, "users", user.uid);
+        const userDocSnapshot = await getDoc(userDocRef);
+  
+        if (userDocSnapshot.exists()) {
+          const userData = userDocSnapshot.data();
+          setRangeVal(userData.defaultSpeed);
+          setSpeechVal(userData.defaultSpeech);
+          setBionicVal(userData.bionic);
+        } else {
+          console.log("User document does not exist");
+        }
+      } else {
+        console.log("User is not logged in");
+      }
     } catch (error) {
-      console.log(error);
+      console.log("Error fetching user data:", error);
     }
   };
+  getData()
+  
+}, [])
+
+useEffect(() => {
+  setBionicText(bionicVal === 0 ? "Normal" : "Bionic");
+}, [bionicVal]);
 
   return (
     <>
@@ -104,9 +113,9 @@ function Home() {
           id="default-range"
           type="range"
           min={1}
-          max={10}
+          max={5}
           value={speechVal}
-          step={0.1}
+          step={0.01}
           onChange={(event) => setSpeechVal(event.target.value)}
           className="w-10/12 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
         />
@@ -127,8 +136,11 @@ function Home() {
           value={bionicVal}
           step={1}
           onChange={(event) => {
-            setBionicVal(event.target.value);
+            const value = event.target.value;
+            setBionicVal(value);
+            setBionicText(value === 0 ? "Normal" : "Bionic");
           }}
+          
           className=" w-8 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
         />
       </div>

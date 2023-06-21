@@ -5,6 +5,8 @@ import Navbar from "./navbar";
 import Topbar from "./topbar";
 import { ReduxProvider } from "app/redux/features/provider.js";
 import { Provider } from "react-redux";
+import { Analytics } from '@vercel/analytics/react';
+
 import { store } from "app/redux/store.js";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -26,6 +28,7 @@ export default function RootLayout({ children }) {
           <Topbar />
           <Navbar />
           {children}
+          <Analytics />
         </ReduxProvider>
         <link rel="icon" href="/favicon.ico" sizes="any" />
         <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@500&display=swap" rel="stylesheet"></link>
