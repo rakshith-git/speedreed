@@ -53,7 +53,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en" className="dark">
       <head><script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8376660329507482"
-     crossorigin="anonymous"></script></head>
+     crossOrigin="anonymous"></script></head>
       <body
         className={`{inter.className} border-gray-200 bg-gray-50 dark:bg-gray-900 dark:border-gray-700 `}
       >
