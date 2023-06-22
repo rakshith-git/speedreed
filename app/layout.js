@@ -22,7 +22,7 @@ export const metadata = {
     ]
   },
   generator: 'Next.js',
-  "keywords": [
+  keywords: [
     "Speedreed",
     "Speedreading",
     "Rapid reading",
