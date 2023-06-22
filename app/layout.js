@@ -11,43 +11,43 @@ import { store } from "app/redux/store.js";
 
 const inter = Inter({ subsets: ["latin"] });
 
-export const metadata = {
-  title: 'SpeedReed - RSVP App for Rapid Reading',
-  description: 'SpeedReed is a powerful RSVP app that enables rapid reading, text extraction, user preferences, text-to-speech, and bionic mode for enhanced comprehension. Read faster and retain more with SpeedReed!',
-  openGraph: {
-    title: 'SpeedReed - RSVP App for Rapid Reading',
-    description: 'SpeedReed is a powerful RSVP app that enables rapid reading, text extraction, user preferences, text-to-speech, and bionic mode for enhanced comprehension. Read faster and retain more with SpeedReed!',
-    images: [
-      { url: 'https://example.com/your-image.jpg', alt: 'SpeedReed Logo' }
-    ]
-  },
-  generator: 'Next.js',
-  keywords: [
-    "Speedreed",
-    "Speedreading",
-    "Rapid reading",
-    "Reading techniques",
-    "Comprehension",
-    "Efficient reading",
-    "Reading skills",
-    "Speed reading tips",
-    "Increase reading speed",
-    "Reading strategies",
-    "Speed reading exercises",
-    "Speed reading courses",
-    "Speed reading practice",
-    "Speed reading benefits",
-    "Speed reading tools",
-    "Speed reading software"
-  ],
-  colorScheme: 'dark',
-  creator: 'Bone Mechanic',
-  twitter: {
-    handle: '@speedreed',
-    site: '@speedreed',
-    cardType: 'summary_large_image'
-  }
-};
+// export const metadata = {
+//   title: 'SpeedReed - RSVP App for Rapid Reading',
+//   description: 'SpeedReed is a powerful RSVP app that enables rapid reading, text extraction, user preferences, text-to-speech, and bionic mode for enhanced comprehension. Read faster and retain more with SpeedReed!',
+//   openGraph: {
+//     title: 'SpeedReed - RSVP App for Rapid Reading',
+//     description: 'SpeedReed is a powerful RSVP app that enables rapid reading, text extraction, user preferences, text-to-speech, and bionic mode for enhanced comprehension. Read faster and retain more with SpeedReed!',
+//     images: [
+//       { url: 'https://example.com/your-image.jpg', alt: 'SpeedReed Logo' }
+//     ]
+//   },
+//   generator: 'Next.js',
+//   keywords: [
+//     "Speedreed",
+//     "Speedreading",
+//     "Rapid reading",
+//     "Reading techniques",
+//     "Comprehension",
+//     "Efficient reading",
+//     "Reading skills",
+//     "Speed reading tips",
+//     "Increase reading speed",
+//     "Reading strategies",
+//     "Speed reading exercises",
+//     "Speed reading courses",
+//     "Speed reading practice",
+//     "Speed reading benefits",
+//     "Speed reading tools",
+//     "Speed reading software"
+//   ],
+//   colorScheme: 'dark',
+//   creator: 'Bone Mechanic',
+//   twitter: {
+//     handle: '@speedreed',
+//     site: '@speedreed',
+//     cardType: 'summary_large_image'
+//   }
+// };
 
 export default function RootLayout({ children }) {
   return (
