@@ -67,7 +67,7 @@ export default function Home() {
     return wordsArray;
   }
 
-  const textArray = convertStringToArray(theText !== "" ? theText : rsvpText);
+  const textArray = convertStringToArray(rsvpText !== "" ? rsvpText  : theText);
 
   useEffect(() => {
     if (progress >= 100) {
