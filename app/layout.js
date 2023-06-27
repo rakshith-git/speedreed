@@ -5,7 +5,7 @@ import Navbar from "./navbar";
 import Topbar from "./topbar";
 import { ReduxProvider } from "app/redux/features/provider.js";
 import { Provider } from "react-redux";
-import { Analytics } from '@vercel/analytics/react';
+import { Analytics } from "@vercel/analytics/react";
 
 import { store } from "app/redux/store.js";
 
@@ -52,8 +52,13 @@ const inter = Inter({ subsets: ["latin"] });
 export default function RootLayout({ children }) {
   return (
     <html lang="en" className="dark">
-      <head><script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8376660329507482"
-     crossOrigin="anonymous"></script></head>
+      <head>
+        <script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8376660329507482"
+          crossOrigin="anonymous"
+        ></script>
+      </head>
       <body
         className={`{inter.className} border-gray-200 bg-gray-50 dark:bg-gray-900 dark:border-gray-700 `}
       >
@@ -64,9 +69,17 @@ export default function RootLayout({ children }) {
           <Analytics />
         </ReduxProvider>
         <link rel="icon" href="/favicon.ico" sizes="any" />
-        <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@500&display=swap" rel="stylesheet"></link>
+        <link
+          rel="apple-touch-icon"
+          href="app/speedreedMobile.png"
+          type="image/png"
+          sizes="180x180"
+        />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Roboto:wght@500&display=swap"
+          rel="stylesheet"
+        ></link>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.6.5/flowbite.min.js"></script>
-        
       </body>
     </html>
   );
