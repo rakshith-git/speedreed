@@ -76,6 +76,12 @@ export default function RootLayout({ children }) {
           sizes="180x180"
         />
         <link
+          rel="icon"
+          href="app/speedreedMobile.png"
+          type="image/png"
+          sizes="180x180"
+        />
+        <link
           href="https://fonts.googleapis.com/css2?family=Roboto:wght@500&display=swap"
           rel="stylesheet"
         ></link>
