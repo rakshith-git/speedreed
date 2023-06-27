@@ -27,7 +27,7 @@ function Topbar() {
     <nav className="border-gray-200 bg-gray-50 dark:bg-gray-800 dark:border-gray-700">
       <div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-2">
         
-        <a href="#" className="flex items-center">
+        <a href="/" className="flex items-center">
         
           <svg
             xmlns="http://www.w3.org/2000/svg"

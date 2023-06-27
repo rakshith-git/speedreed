@@ -54,7 +54,8 @@ export default function Home() {
           text: rsvpText,
           defaultSpeed: 240,
           defaultSpeech: 1,
-          isBionic: false,
+          bionic: parseInt(0),
+          burst:parseInt(0),
         });
         console.log("User document created successfully!");
         setDocCreated(true);

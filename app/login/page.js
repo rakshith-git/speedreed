@@ -1,6 +1,8 @@
 "use client";
 import React from "react";
 import { auth, googleProvider } from "app/firebaseConfig.js";
+import { useState,useEffect } from "react";
+
 import {
   signInWithPopup,
   setPersistence,
@@ -26,6 +28,16 @@ export function Jumbo() {
       console.log(error);
     }
   };
+  const [isAuth, setIsAuth] = useState(false)
+
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      setIsAuth(!!user);
+    });
+  
+    // Cleanup the listener when the component unmounts
+    return () => unsubscribe();
+  }, []);
 
   return (
     <section className="bg-white dark:bg-gray-900">
@@ -40,7 +52,7 @@ export function Jumbo() {
         </p>
         <div className="flex flex-col space-y-4 sm:flex-row sm:justify-center sm:space-y-0 sm:space-x-4">
           <div className="px-6 sm:px-0 max-w-sm">
-            <button
+            {!isAuth?<button
               type="button"
               onClick={signInwithGoogle}
               className="text-white w-full  bg-[#4285F4] hover:bg-[#4285F4]/90 focus:ring-4 focus:outline-none focus:ring-[#4285F4]/50 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center justify-between dark:focus:ring-[#4285F4]/55 mr-2 mb-2"
@@ -63,7 +75,7 @@ export function Jumbo() {
               Sign up with Google
               <div />
             </button>
-            <button
+            :<button
               type="button"
               onClick={async()=>{try {
                 await signOut(auth,googleProvider)
@@ -89,7 +101,7 @@ export function Jumbo() {
               </svg>
               Sign Out
               <div />
-            </button>
+            </button>}
            
           </div>
         </div>

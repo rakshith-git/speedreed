@@ -15,6 +15,7 @@ function Home() {
   const [rangeVal, setRangeVal] = useState(240);
   const [speechVal, setSpeechVal] = useState(3);
   const [bionicVal, setBionicVal] = useState(0);
+  const [burstVal, setBurstVal] = useState(0);
   const [bionicText, setBionicText] = useState("Normal");
 
   useEffect(() => {
@@ -27,6 +28,7 @@ function Home() {
         defaultSpeed: rangeVal,
         defaultSpeech: speechVal,
         bionic: parseInt(bionicVal),
+        burst:parseInt(burstVal),
       });
     } catch (error) {
       console.log(error);
@@ -45,6 +47,7 @@ useEffect(() => {
           setRangeVal(userData.defaultSpeed);
           setSpeechVal(userData.defaultSpeech);
           setBionicVal(userData.bionic);
+          setBurstVal(userData.burst);
         } else {
           console.log("User document does not exist");
         }
@@ -139,6 +142,30 @@ useEffect(() => {
             const value = event.target.value;
             setBionicVal(value);
             setBionicText(value === 0 ? "Normal" : "Bionic");
+          }}
+          
+          className=" w-8 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
+        />
+      </div>
+      <label
+        htmlFor="default-range"
+        className="flex my-8 mx-4 text-xl font-medium text-gray-900 dark:text-white"
+      >
+        Toggle burst mode :
+      </label>
+      <div className="flex justify-center mt-12">
+        
+        <input
+          id="default-range"
+          type="range"
+          min={0}
+          max={1}
+          value={burstVal}
+          step={1}
+          onChange={(event) => {
+            const value = event.target.value;
+            setBurstVal(value);
+            
           }}
           
           className=" w-8 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"

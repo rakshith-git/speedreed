@@ -24,6 +24,7 @@ export default function Home() {
   const [rangeVal, setRangeVal] = useState(240);
   const [speechVal, setSpeechVal] = useState(1);
   const [isBionic, setIsBionic] = useState(0);
+  const [isburst, setIsBurst] = useState(0);
   const [speaking, setSpeaking] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [increment, setIncrement] = useState(0);
@@ -49,6 +50,7 @@ export default function Home() {
         setSpeechVal(userTextDoc.data().defaultSpeech);
         setRangeVal(userTextDoc.data().defaultSpeed);
         setIsBionic(userTextDoc.data().bionic);
+        setIsBurst(userTextDoc.data().burst);
         console.log(theText);
       } catch (error) {
         console.log(error);
@@ -75,7 +77,7 @@ export default function Home() {
       setIncrement(0);
       setCurrentIndex(textArray.length - 1);
     }
-    if(textArray[currentIndex]){
+    if(textArray[currentIndex] && isburst===1 ){
     (textArray[currentIndex].includes('.'))?setExtraTime((60000 / rangeVal)*4):setExtraTime(0);
     
     }

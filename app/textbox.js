@@ -41,11 +41,12 @@ function Textbox() {
     dispatch(setRSVPText(textBox));
   }, [textBox]);
 
+
   const handleImageUpload = (event) => {
     console.log(event.target.files);
     const file = event.target.files[0];
     const reader = new FileReader();
-
+    settextBox("Loading...")
     reader.onload = (e) => {
       const imageContent = e.target.result;
       extractTextFromImage(imageContent);
@@ -55,6 +56,7 @@ function Textbox() {
   };
 
   const extractTextFromImage = (imageContent) => {
+    
     Tesseract.recognize(imageContent, "eng")
       .then((result) => {
         const extractedText = result.data.text;
@@ -66,6 +68,7 @@ function Textbox() {
   };
 
   async function fetchWikipediaData(searchTerm) {
+    
     const response = await fetch(
       `https://en.wikipedia.org/w/api.php?action=query&format=json&prop=extracts&exintro&explaintext&generator=search&gsrnamespace=0&gsrlimit=1&gsrsearch=${searchTerm}&origin=*`
     );
@@ -115,6 +118,7 @@ function Textbox() {
     }
   };
   const handleSearch = async () => {
+    
     fetchWikipediaData(searchTerm)
       .then((pageContent) => {
         console.log(`Wikipedia page content for ${searchTerm}:`, pageContent);
@@ -135,6 +139,7 @@ function Textbox() {
       })
       .catch((error) => {
         console.error("Failed to read clipboard data:", error);
+        settextBox("Nothing in the clipboard");
       });
   }
 
