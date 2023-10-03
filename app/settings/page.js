@@ -99,11 +99,7 @@ useEffect(() => {
         htmlFor="default-range"
         className="flex my-8 mx-4 text-xl font-medium text-gray-900 dark:text-white"
       >
-<<<<<<< HEAD
         Set Speech speed to:
-=======
-        Set speech speed to:
->>>>>>> ddea1fa (fixed major bugs)
       </label>
       <div className="flex mt-8 justify-center">
         <label
