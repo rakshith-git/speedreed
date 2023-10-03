@@ -73,7 +73,7 @@ useEffect(() => {
         htmlFor="default-range"
         className="flex my-4 mx-4 text-xl font-medium text-gray-900 dark:text-white"
       >
-        set default speed to:
+        Set default speed to:
       </label>
       <div className="flex mt-8 justify-center">
         <label
@@ -100,7 +100,7 @@ useEffect(() => {
         htmlFor="default-range"
         className="flex my-8 mx-4 text-xl font-medium text-gray-900 dark:text-white"
       >
-        set Speech speed to:
+        Set Speech speed to:
       </label>
       <div className="flex mt-8 justify-center">
         <label
