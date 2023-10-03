@@ -68,7 +68,6 @@ useEffect(() => {
 
   return (
     <>
-    <h1 className="text-white">Login to use defaults</h1>
       <label
         htmlFor="default-range"
         className="flex my-4 mx-4 text-xl font-medium text-gray-900 dark:text-white"
@@ -80,7 +79,7 @@ useEffect(() => {
           htmlFor="default-range"
           className="block mb-4 mx-10 text-sm font-medium text-gray-900 dark:text-white"
         >
-          {rangeVal} Words/Minute
+          {rangeVal} words/minute
         </label>
       </div>
 
@@ -100,7 +99,11 @@ useEffect(() => {
         htmlFor="default-range"
         className="flex my-8 mx-4 text-xl font-medium text-gray-900 dark:text-white"
       >
+<<<<<<< HEAD
         Set Speech speed to:
+=======
+        Set speech speed to:
+>>>>>>> ddea1fa (fixed major bugs)
       </label>
       <div className="flex mt-8 justify-center">
         <label
@@ -127,7 +130,7 @@ useEffect(() => {
         htmlFor="default-range"
         className="flex my-8 mx-4 text-xl font-medium text-gray-900 dark:text-white"
       >
-        Toggle Reading mode ({bionicText}):
+        Toggle reading mode ({bionicText}):
       </label>
       <div className="flex justify-center mt-12">
         
