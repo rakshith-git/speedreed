@@ -1,4 +1,4 @@
-'use client'
+"use client";
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Navbar from "./navbar";
@@ -6,7 +6,7 @@ import { auth, db } from "./firebaseConfig";
 import Textbox from "./textbox";
 import Topbar from "./topbar";
 import { useAppSelector } from "app/redux/store.js";
-import { doc, collection, setDoc,getDoc, updateDoc } from "firebase/firestore";
+import { doc, collection, setDoc, getDoc, updateDoc } from "firebase/firestore";
 import { signOut } from "firebase/auth";
 
 export default function Home() {
@@ -43,7 +43,7 @@ export default function Home() {
     if (uid) {
       const userDocRef = doc(db, "users", uid);
       const userDocSnapshot = await getDoc(userDocRef);
-  
+
       if (userDocSnapshot.exists()) {
         await updateDoc(userDocRef, {
           text: rsvpText,
@@ -55,7 +55,7 @@ export default function Home() {
           defaultSpeed: 240,
           defaultSpeech: 1,
           bionic: parseInt(0),
-          burst:parseInt(0),
+          burst: parseInt(0),
         });
         console.log("User document created successfully!");
         setDocCreated(true);
@@ -84,6 +84,16 @@ export default function Home() {
 
   return (
     <>
+      <div className="py-8 px-4 mx-auto max-w-screen-xl text-center lg:py-16">
+        <h1 className="mb-4 text-4xl font-extrabold tracking-tight leading-none text-gray-900 md:text-5xl lg:text-6xl dark:text-white">
+          Don't Just Read it Reed it!
+        </h1>
+        <p className="mb-8 text-lg font-normal text-gray-500 lg:text-xl sm:px-16 lg:px-48 dark:text-gray-400">
+          SpeedReed lets you unlock the full potential of human Language
+          processing using various methods of speed and comprenhension enhancing
+          technology
+        </p>{" "}
+      </div>
       <div className="mt-4 dark:text-gray-100"></div>
       {render}
 
