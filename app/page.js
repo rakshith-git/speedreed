@@ -84,7 +84,11 @@ export default function Home() {
 
   return (
     <>
-
+      <div className="animate-fade-down animate-delay-500 animate-once py-8 px-4 mx-auto max-w-screen-xl text-center lg:py-8">
+        <h1 className=" animate-text  bg-gradient-to-r from-blue-500 via-purple-500 to-cyan-400 bg-clip-text text-transparent text-5xl font-black ">
+          Dont Just Read it , Reed it!
+        </h1>
+      </div>
       <div className="mt-4 dark:text-gray-100"></div>
       {render}
 
@@ -99,10 +103,8 @@ export default function Home() {
         </Link>
       </div>
       <div className="py-8 px-4 mx-auto max-w-screen-xl text-center lg:py-16">
-        <h1 className="mb-4 text-4xl font-extrabold tracking-tight leading-none text-gray-900 md:text-5xl lg:text-6xl dark:text-white">
-          Don't Just Read it Reed it!
-        </h1>
-        <p className="mb-8 text-lg font-normal text-gray-500 lg:text-xl sm:px-16 lg:px-48 dark:text-gray-400">
+
+        <p className="animate-fade-down animate-delay-1000 animate-once mb-8 text-lg font-normal text-gray-500 lg:text-xl sm:px-16 lg:px-48 dark:text-gray-400">
           SpeedReed lets you unlock the full potential of human Language
           processing using various methods of speed and comprenhension enhancing
           technology
