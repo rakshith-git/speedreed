@@ -1,3 +1,8 @@
+I hate reading coz im slow at reading, hence i made this tool that helps me read at INSANELY high speeds. 
+By using Rapid serial presentation of words on the screen 
+this cuts down time and improves comprehension.
+
+
 This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
 ## Getting Started
