@@ -5,6 +5,7 @@ import Navbar from "./navbar";
 import Topbar from "./topbar";
 import { ReduxProvider } from "app/redux/features/provider.js";
 import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from '@vercel/speed-insights/next';
 
 import { store } from "app/redux/store.js";
 
@@ -101,6 +102,7 @@ export default function RootLayout({ children }) {
       <body
         className={`{inter.className} border-gray-200 bg-gray-50 dark:bg-gray-900 dark:border-gray-700 `}
       >
+        <SpeedInsights />
         <ReduxProvider store={store}>
           <Topbar />
           <Navbar />
