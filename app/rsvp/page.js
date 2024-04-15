@@ -30,7 +30,7 @@ export default function Home() {
   const [increment, setIncrement] = useState(0);
   const [progress, setProgress] = useState(0);
   const [refrence, setRefrence] = useState("");
-  const [extraTime, setExtraTime] = useState(0)
+  const [extraTime, setExtraTime] = useState(0);
   // useEffect(() => {
   //   const timer = setTimeout(() => {
   //     if (auth.currentUser) {
@@ -41,11 +41,13 @@ export default function Home() {
 
   //   return () => clearTimeout(timer);
   // }, []);
-  
+
   useEffect(() => {
     const getText = async () => {
       try {
-        const userTextDoc = await getDoc(doc(db, "users", auth.currentUser.uid));
+        const userTextDoc = await getDoc(
+          doc(db, "users", auth.currentUser.uid),
+        );
         setTheText(userTextDoc.data().text);
         setSpeechVal(userTextDoc.data().defaultSpeech);
         setRangeVal(userTextDoc.data().defaultSpeed);
@@ -56,7 +58,7 @@ export default function Home() {
         console.log(error);
       }
     };
-  
+
     getText();
   }, []);
   function convertStringToArray(text) {
@@ -69,7 +71,7 @@ export default function Home() {
     return wordsArray;
   }
 
-  const textArray = convertStringToArray(rsvpText !== "" ? rsvpText  : theText);
+  const textArray = convertStringToArray(rsvpText !== "" ? rsvpText : theText);
 
   useEffect(() => {
     if (progress >= 100) {
@@ -77,29 +79,32 @@ export default function Home() {
       setIncrement(0);
       setCurrentIndex(textArray.length - 1);
     }
-    if(textArray[currentIndex] && isburst===1 ){
-    (textArray[currentIndex].includes('.'))?setExtraTime((60000 / rangeVal)*4):setExtraTime(0);
-    
+    if (textArray[currentIndex] && isburst === 1) {
+      textArray[currentIndex].includes(".")
+        ? setExtraTime((60000 / rangeVal) * 4)
+        : setExtraTime(0);
     }
-    const intervalId = setInterval(() => {
-      if (increment === 0 || count >= textArray.length - 1)
-        return () => clearInterval(intervalId);
+    const intervalId = setInterval(
+      () => {
+        if (increment === 0 || count >= textArray.length - 1)
+          return () => clearInterval(intervalId);
 
-      setCurrentIndex((currentIndex) => {
-        setProgress(1 + (currentIndex / textArray.length) * 100);
-        
-        return currentIndex + increment;
-      });
+        setCurrentIndex((currentIndex) => {
+          setProgress(1 + (currentIndex / textArray.length) * 100);
 
-      count++;
-    }, (60000 / rangeVal)+extraTime); // Change the interval time here to adjust the speed of the RSVP
+          return currentIndex + increment;
+        });
+
+        count++;
+      },
+      60000 / rangeVal + extraTime,
+    ); // Change the interval time here to adjust the speed of the RSVP
     return () => clearInterval(intervalId);
   }, [rangeVal, increment, progress]);
-
   useEffect(() => {
     if (currentIndex % 10 == 0)
       setRefrence(
-        getSubstringFromArray(textArray, currentIndex - 10, currentIndex + 10)
+        getSubstringFromArray(textArray, currentIndex - 10, currentIndex + 10),
       );
   }, [currentIndex]);
 
@@ -126,18 +131,20 @@ export default function Home() {
     return substring;
   }
   const handleSpeak = () => {
-    if ('speechSynthesis' in window) {
+    if ("speechSynthesis" in window) {
       const synthesis = window.speechSynthesis;
-      const utterance = new SpeechSynthesisUtterance(getSubstringFromArray(textArray,currentIndex,textArray.length));
+      const utterance = new SpeechSynthesisUtterance(
+        getSubstringFromArray(textArray, currentIndex, textArray.length),
+      );
       utterance.rate = speechVal;
       synthesis.speak(utterance);
       setSpeaking(true);
     } else {
-      console.log('Speech synthesis is not supported in this browser.');
+      console.log("Speech synthesis is not supported in this browser.");
     }
   };
   const handleStop = () => {
-    if ('speechSynthesis' in window && speaking) {
+    if ("speechSynthesis" in window && speaking) {
       window.speechSynthesis.cancel();
       setSpeaking(false);
     }
@@ -149,7 +156,11 @@ export default function Home() {
         <h1>{refrence}</h1>
       </div>
       <div className="flex justify-center my-8 text-white text-6xl font-roboto">
-        {(isBionic===1)?<Bionic word={textArray[currentIndex]}/>:textArray[currentIndex]}
+        {isBionic === 1 ? (
+          <Bionic word={textArray[currentIndex]} />
+        ) : (
+          textArray[currentIndex]
+        )}
       </div>
 
       <div className="flex justify-center">
@@ -160,6 +171,24 @@ export default function Home() {
           />
         </div>
       </div>
+      <div className="flex justify-center items-center">
+ {increment === 0 && (
+    <button
+      className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-4 mr-2 my-6 mt-4 dark:bg-blue-700 dark:hover:bg-blue-800 focus:outline-none dark:focus:ring-blue-800"
+      onClick={() => {
+        if (currentIndex > 10) {
+          setCurrentIndex(currentIndex - 10);
+          setProgress(1 + (currentIndex / textArray.length) * 100);
+          
+        }
+      }}
+    >
+      ⏪Rewind ⏪
+    </button>
+    
+ )}
+</div>
+
       <div className="flex justify-center">
         <label
           htmlFor="default-range"
@@ -184,19 +213,16 @@ export default function Home() {
         <button
           type="button"
           onClick={() => {
-            
             if (increment === 1) {
               setIncrement(0);
-              window.speechSynthesis.cancel()
-             
+              window.speechSynthesis.cancel();
             } else {
-              
               setIncrement(1);
             }
           }}
           className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"
         >
-          {(increment===1?"Stop":"Start")}
+          {increment === 1 ? "Stop" : "Start"}
         </button>
         <button
           type="button"
@@ -205,7 +231,7 @@ export default function Home() {
             setCurrentIndex(0);
             setIncrement(0);
             count = 0;
-            window.speechSynthesis.cancel()
+            window.speechSynthesis.cancel();
           }}
           className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"
         >
@@ -213,19 +239,18 @@ export default function Home() {
         </button>
         <button
           type="button"
-          onClick={(speaking===false)?handleSpeak:handleStop}
+          onClick={speaking === false ? handleSpeak : handleStop}
           className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"
         >
-          {(speaking===true?"Stop":"Speak")}
+          {speaking === true ? "Stop" : "Speak"}
         </button>
-        
       </div>
     </>
   );
 }
-export function Bionic( {word} ) {
-  if(word===undefined){
-    word=""
+export function Bionic({ word }) {
+  if (word === undefined) {
+    word = "";
   }
   const halfLength = Math.floor(word.length / 2);
   const firstHalf = word.slice(0, halfLength);
@@ -237,4 +262,4 @@ export function Bionic( {word} ) {
       {secondHalf}
     </div>
   );
-};
+}
