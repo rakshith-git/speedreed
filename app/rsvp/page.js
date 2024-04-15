@@ -172,7 +172,7 @@ export default function Home() {
         </div>
       </div>
       <div className="flex justify-center items-center">
- {increment === 0 && (
+ {increment === 0 && currentIndex>10 && (
     <button
       className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-4 mr-2 my-6 mt-4 dark:bg-blue-700 dark:hover:bg-blue-800 focus:outline-none dark:focus:ring-blue-800"
       onClick={() => {
