@@ -31,17 +31,6 @@ export default function Home() {
   const [progress, setProgress] = useState(0);
   const [refrence, setRefrence] = useState("");
   const [extraTime, setExtraTime] = useState(0);
-  // useEffect(() => {
-  //   const timer = setTimeout(() => {
-  //     if (auth.currentUser) {
-  //       getText();
-  //       console.log("hloo");
-  //     }
-  //   }, 400);
-
-  //   return () => clearTimeout(timer);
-  // }, []);
-
   useEffect(() => {
     const getText = async () => {
       try {
@@ -101,6 +90,8 @@ export default function Home() {
     ); // Change the interval time here to adjust the speed of the RSVP
     return () => clearInterval(intervalId);
   }, [rangeVal, increment, progress]);
+
+  //creating 20 word reference array
   useEffect(() => {
     if (currentIndex % 10 == 0)
       setRefrence(
@@ -130,6 +121,7 @@ export default function Home() {
 
     return substring;
   }
+
   const handleSpeak = () => {
     if ("speechSynthesis" in window) {
       const synthesis = window.speechSynthesis;
@@ -149,6 +141,7 @@ export default function Home() {
       setSpeaking(false);
     }
   };
+
   return (
     <>
       <h1>{textArray.length}</h1>
@@ -172,22 +165,20 @@ export default function Home() {
         </div>
       </div>
       <div className="flex justify-center items-center">
- {increment === 0 && currentIndex>10 && (
-    <button
-      className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-4 mr-2 my-6 mt-4 dark:bg-blue-700 dark:hover:bg-blue-800 focus:outline-none dark:focus:ring-blue-800"
-      onClick={() => {
-        if (currentIndex > 10) {
-          setCurrentIndex(currentIndex - 10);
-          setProgress(1 + (currentIndex / textArray.length) * 100);
-          
-        }
-      }}
-    >
-      ⏪Rewind ⏪
-    </button>
-    
- )}
-</div>
+        {increment === 0 && currentIndex > 10 && (
+          <button
+            className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-4 mr-2 my-6 mt-4 dark:bg-blue-700 dark:hover:bg-blue-800 focus:outline-none dark:focus:ring-blue-800"
+            onClick={() => {
+              if (currentIndex > 10) {
+                setCurrentIndex(currentIndex - 10);
+                setProgress(1 + (currentIndex / textArray.length) * 100);
+              }
+            }}
+          >
+            ⏪ Rewind ⏪
+          </button>
+        )}
+      </div>
 
       <div className="flex justify-center">
         <label
