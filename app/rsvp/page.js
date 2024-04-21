@@ -1,7 +1,5 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import Textbox from "../textbox";
-import { useSelector } from "react-redux";
 import { useAppSelector } from "app/redux/store.js";
 import { auth } from "app/firebaseConfig.js";
 
@@ -30,6 +28,7 @@ export default function Home() {
   const [increment, setIncrement] = useState(0);
   const [progress, setProgress] = useState(0);
   const [refrence, setRefrence] = useState("");
+  const [refrenceLength, setRefrenceLength] = useState(10);
   const [extraTime, setExtraTime] = useState(0);
   useEffect(() => {
     const getText = async () => {
@@ -41,6 +40,7 @@ export default function Home() {
         setSpeechVal(userTextDoc.data().defaultSpeech);
         setRangeVal(userTextDoc.data().defaultSpeed);
         setIsBionic(userTextDoc.data().bionic);
+        setRefrenceLength(userTextDoc.data().refrence);
         setIsBurst(userTextDoc.data().burst);
         console.log(theText);
       } catch (error) {
@@ -93,11 +93,19 @@ export default function Home() {
 
   //creating 20 word reference array
   useEffect(() => {
-    if (currentIndex % 10 == 0)
+    console.log(currentIndex - parseInt(refrenceLength), currentIndex + parseInt(refrenceLength))
+    let startIndex = currentIndex- parseInt(refrenceLength);
+    let endAtIndex = currentIndex+ parseInt(refrenceLength);
+    if (currentIndex % refrenceLength == 0)
+    {
+      
       setRefrence(
-        getSubstringFromArray(textArray, currentIndex - 10, currentIndex + 10),
+        getSubstringFromArray(textArray, startIndex, endAtIndex)
+        
       );
-  }, [currentIndex]);
+    }
+      console.log(refrence,refrenceLength,currentIndex,currentIndex % refrenceLength == 0);
+  }, [currentIndex,refrenceLength]);
 
   function getSubstringFromArray(textArray, startIndex, endIndex) {
     // Validate input

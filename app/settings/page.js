@@ -15,6 +15,7 @@ function Home() {
   const [speechVal, setSpeechVal] = useState(3);
   const [bionicVal, setBionicVal] = useState(0);
   const [burstVal, setBurstVal] = useState(0);
+  const [refrenceVal,setRefrenceVal] = useState(10);
   const [bionicText, setBionicText] = useState("Normal");
 
   const [isAuth, setIsAuth] = useState(false);
@@ -34,6 +35,7 @@ function Home() {
         defaultSpeech: speechVal,
         bionic: parseInt(bionicVal),
         burst: parseInt(burstVal),
+        refrence: refrenceVal,
       });
     } catch (error) {
       console.log(error);
@@ -53,6 +55,8 @@ function Home() {
             setSpeechVal(userData.defaultSpeech);
             setBionicVal(userData.bionic);
             setBurstVal(userData.burst);
+            setRefrenceVal(userData.refrence);
+            console.log(userData);
           } else {
             console.log("User document does not exist");
           }
@@ -82,6 +86,7 @@ function Home() {
       ) : (
         <></>
       )}
+
       <label
         htmlFor="default-range"
         className="flex my-4 mx-4 text-xl font-medium text-gray-900 dark:text-white"
@@ -105,6 +110,33 @@ function Home() {
           max={1000}
           value={rangeVal}
           onChange={(event) => setRangeVal(event.target.value)}
+          className="w-10/12 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
+        />
+      </div>
+
+      <label
+        htmlFor="default-range"
+        className="flex my-4 mx-4 text-xl font-medium text-gray-900 dark:text-white"
+      >
+        Set default Reference words limit to:
+      </label>
+      <div className="flex mt-8 justify-center">
+        <label
+          htmlFor="default-range"
+          className="block mb-4 mx-10 text-sm font-medium text-gray-900 dark:text-white"
+        >
+          {refrenceVal} words
+        </label>
+      </div>
+
+      <div className="flex justify-center">
+        <input
+          id="default-range"
+          type="range"
+          min={1}
+          max={20}
+          value={refrenceVal}
+          onChange={(event) => setRefrenceVal(event.target.value)}
           className="w-10/12 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
         />
       </div>
@@ -180,7 +212,7 @@ function Home() {
           />
         </div>
       </div>
-      <div className="flex my-10 justify-center">
+      <div className="flex my-10 py-10 justify-center">
         <button
           type="button"
           onClick={uploadtofb}
