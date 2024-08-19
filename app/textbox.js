@@ -148,7 +148,8 @@ function Textbox() {
             <div className="flex items-center justify-between px-3 py-2 border-b dark:border-gray-600">
               <div className="flex flex-wrap items-center divide-gray-200 sm:divide-x dark:divide-gray-600">
                 <div className="flex items-center space-x-1 sm:pr-4">
-                  <form className="flex items-center" onSubmit={handleSearch}>
+                  <form className="flex items-center" onSubmit={(e)=>{e.preventdefault();
+                                                                      handleSearch;}}>
                     <div className="relative w-full">
                       <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                         <svg
