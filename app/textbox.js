@@ -41,12 +41,11 @@ function Textbox() {
     dispatch(setRSVPText(textBox));
   }, [textBox]);
 
-
   const handleImageUpload = (event) => {
     console.log(event.target.files);
     const file = event.target.files[0];
     const reader = new FileReader();
-    settextBox("Loading...")
+    settextBox("Loading...");
     reader.onload = (e) => {
       const imageContent = e.target.result;
       extractTextFromImage(imageContent);
@@ -56,7 +55,6 @@ function Textbox() {
   };
 
   const extractTextFromImage = (imageContent) => {
-    
     Tesseract.recognize(imageContent, "eng")
       .then((result) => {
         const extractedText = result.data.text;
@@ -68,7 +66,6 @@ function Textbox() {
   };
 
   async function fetchWikipediaData(searchTerm) {
-    
     const response = await fetch(
       `https://en.wikipedia.org/w/api.php?action=query&format=json&prop=extracts&exintro&explaintext&generator=search&gsrnamespace=0&gsrlimit=1&gsrsearch=${searchTerm}&origin=*`
     );
@@ -118,7 +115,6 @@ function Textbox() {
     }
   };
   const handleSearch = async () => {
-    
     fetchWikipediaData(searchTerm)
       .then((pageContent) => {
         console.log(`Wikipedia page content for ${searchTerm}:`, pageContent);
@@ -152,7 +148,7 @@ function Textbox() {
             <div className="flex items-center justify-between px-3 py-2 border-b dark:border-gray-600">
               <div className="flex flex-wrap items-center divide-gray-200 sm:divide-x dark:divide-gray-600">
                 <div className="flex items-center space-x-1 sm:pr-4">
-                  <form className="flex items-center">
+                  <form className="flex items-center" onSubmit={handleSearch}>
                     <div className="relative w-full">
                       <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                         <svg
