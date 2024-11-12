@@ -33,13 +33,6 @@ export default function RootLayout({
       >
         {children}
         <CustomDock />
-        <Particles
-          className="absolute inset-0"
-          quantity={1000}
-          ease={80}
-          color={"#ffffff"}
-          refresh
-        />
       </body>
     </html>
   );

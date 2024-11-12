@@ -6,7 +6,7 @@ import { Home, ChartLine, User, BookOpen, Settings } from "lucide-react";
 
 export default function CustomDock() {
   return (
-    <div className="fixed bottom-10 left-0 right-0 bg-gray-950 z-50">
+    <div className="fixed bottom-10 left-0 right-0 bg-transparent z-50">
       <div className="max-w-screen-xl mx-auto px-4">
         <Dock direction="middle" className="py-2">
           <DockIcon>
