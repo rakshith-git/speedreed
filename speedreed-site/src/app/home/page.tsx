@@ -7,13 +7,6 @@ function page() {
   return (
     <>
       <div className="flex items-center justify-center mt-8 z-50">
-        {/* <Particles */}
-        {/*   className="absolute inset-0" */}
-        {/*   quantity={500} */}
-        {/*   ease={80} */}
-        {/*   color={"#ffffff"} */}
-        {/*   refresh */}
-        {/* /> */}
         <HyperText
           className="text-5xl font-bold text-black dark:text-white"
           text="SPEEDREED"

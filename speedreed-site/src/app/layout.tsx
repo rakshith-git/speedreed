@@ -29,7 +29,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen pb-16`}
+        className={`${geistSans.variable} ${geistMono.variable} overflow-hidden antialiased min-h-screen pb-16`}
       >
         {children}
         <CustomDock />

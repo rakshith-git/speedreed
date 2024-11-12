@@ -8,7 +8,7 @@ export default function TextArea() {
   return (
     <div className="w-full space-y-4 p-4 bg-background text-foreground">
       <div className="flex items-center space-x-2">
-        <div className="flex-grow flex items-center space-x-2">
+        <div className="flex-shrink flex items-center space-x-2">
           <div className="relative flex-grow">
             <Input type="text" placeholder="Search wiki..." className="" />
           </div>
@@ -37,8 +37,7 @@ export default function TextArea() {
         </div>
       </div>
       <div className="relative">
-        <BorderBeam duration={10} />
-        <BorderBeam duration={10} delay={5} />
+        <BorderBeam duration={30} />
         <Textarea
           placeholder="Type your content here..."
           className="min-h-[300px] w-full"
