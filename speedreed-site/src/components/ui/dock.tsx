@@ -1,13 +1,9 @@
 "use client";
+
 import React, { PropsWithChildren, useRef } from "react";
 import { cva, type VariantProps } from "class-variance-authority";
-import {
-  motion,
-  useMotionValue,
-  useSpring,
-  useTransform,
-  MotionValue,
-} from "framer-motion";
+import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
+
 import { cn } from "@/lib/utils";
 
 export interface DockProps extends VariantProps<typeof dockVariants> {
@@ -19,10 +15,10 @@ export interface DockProps extends VariantProps<typeof dockVariants> {
 }
 
 const DEFAULT_MAGNIFICATION = 50;
-const DEFAULT_DISTANCE = 50;
+const DEFAULT_DISTANCE = 140;
 
 const dockVariants = cva(
-  "supports-backdrop-blur:bg-white/10 supports-backdrop-blur:dark:bg-black/10 mx-auto mt-8 flex h-full w-full gap-2 rounded-2xl  p-2 backdrop-blur-md",
+  "supports-backdrop-blur:bg-white/10 supports-backdrop-blur:dark:bg-black/10 mx-auto mt-8 flex h-[58px] w-max gap-2 rounded-2xl border p-2 backdrop-blur-md",
 );
 
 const Dock = React.forwardRef<HTMLDivElement, DockProps>(
@@ -77,9 +73,10 @@ export interface DockIconProps {
   size?: number;
   magnification?: number;
   distance?: number;
-  mouseX?: MotionValue<number>;
+  mouseX?: any;
   className?: string;
   children?: React.ReactNode;
+  props?: PropsWithChildren;
 }
 
 const DockIcon = ({
@@ -93,16 +90,11 @@ const DockIcon = ({
 }: DockIconProps) => {
   const ref = useRef<HTMLDivElement>(null);
 
-  // Move all Hook calls to the top level
-  const distanceCalc = mouseX
-    ? useTransform(mouseX, (val: number) => {
-        const bounds = ref.current?.getBoundingClientRect() ?? {
-          x: 0,
-          width: 0,
-        };
-        return val - bounds.x - bounds.width / 2;
-      })
-    : useMotionValue(0);
+  const distanceCalc = useTransform(mouseX, (val: number) => {
+    const bounds = ref.current?.getBoundingClientRect() ?? { x: 0, width: 0 };
+
+    return val - bounds.x - bounds.width / 2;
+  });
 
   const widthSync = useTransform(
     distanceCalc,
@@ -116,12 +108,10 @@ const DockIcon = ({
     damping: 12,
   });
 
-  const finalWidth = mouseX ? width : DEFAULT_MAGNIFICATION;
-
   return (
     <motion.div
       ref={ref}
-      style={{ width: finalWidth }}
+      style={{ width }}
       className={cn(
         "flex aspect-square cursor-pointer items-center justify-center rounded-full",
         className,
