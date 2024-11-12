@@ -7,17 +7,21 @@ import { BorderBeam } from "../ui/border-beam";
 export default function TextArea() {
   return (
     <div className="w-full space-y-4 p-4 bg-background text-foreground">
-      <div className="flex items-center space-x-2">
-        <div className="flex-grow flex items-center space-x-2">
-          <div className="relative flex-grow">
-            <Input type="text" placeholder="Search wiki..." className="" />
+      <div className="flex items-center justify-between">
+        {/* Search box and search button container */}
+        <div className="flex items-center space-x-2">
+          <div className="flex-shrink-0 flex items-center space-x-2 max-w-xs">
+            <Input type="text" placeholder="Search wiki..." className="w-60" />{" "}
+            {/* Set desired width */}
+            <Button variant="outline" size="icon">
+              <Search className="h-4 w-4" />
+              <span className="sr-only">Search</span>
+            </Button>
           </div>
         </div>
-        <div className="flex space-x-1">
-          <Button variant="outline" size="icon">
-            <Search className="h-4 w-4" />
-            <span className="sr-only">Search</span>
-          </Button>
+
+        {/* Right-aligned buttons container */}
+        <div className="flex items-center space-x-2">
           <Button variant="outline" size="icon">
             <Paperclip className="h-4 w-4" />
             <span className="sr-only">Attach</span>
@@ -36,9 +40,9 @@ export default function TextArea() {
           </Button>
         </div>
       </div>
+
       <div className="relative">
-        <BorderBeam duration={10} />
-        <BorderBeam duration={10} delay={5} />
+        <BorderBeam duration={30} />
         <Textarea
           placeholder="Type your content here..."
           className="min-h-[300px] w-full"
