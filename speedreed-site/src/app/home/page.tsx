@@ -1,6 +1,5 @@
 import TextArea from "@/components/custom/TextArea";
 import HyperText from "@/components/ui/hyper-text";
-import Particles from "@/components/ui/particles";
 import React from "react";
 
 function page() {

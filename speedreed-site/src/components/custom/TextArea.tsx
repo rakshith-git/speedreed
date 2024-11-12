@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Search, Paperclip, Image, Cpu, Clipboard, Dock } from "lucide-react";
+import { Search, Paperclip, Image, Cpu, Clipboard } from "lucide-react";
 import { BorderBeam } from "../ui/border-beam";
 
 export default function TextArea() {
