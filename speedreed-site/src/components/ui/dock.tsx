@@ -1,4 +1,7 @@
+<<<<<<< HEAD
 /* eslint-disable @typescript-eslint/no-unused-vars */
+=======
+>>>>>>> f4389f8c1c8585fd7c85e3039dd5fc09d7fd7b9d
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
