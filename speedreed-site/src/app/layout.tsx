@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import CustomDock from "@/components/custom/CustomDock";
+import Particles from "@/components/ui/particles";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -32,6 +33,13 @@ export default function RootLayout({
       >
         {children}
         <CustomDock />
+        <Particles
+          className="absolute inset-0"
+          quantity={1000}
+          ease={80}
+          color={"#ffffff"}
+          refresh
+        />
       </body>
     </html>
   );
