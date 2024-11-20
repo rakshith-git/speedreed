@@ -165,6 +165,7 @@ celerybeat.pid
 # Environments
 .env
 .venv
+speedreed-env/
 env/
 venv/
 ENV/
