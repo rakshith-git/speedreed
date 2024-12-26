@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Search, Paperclip, Image, Cpu, Clipboard, Dock } from "lucide-react";
+import { Search, Paperclip, Image, Cpu, Clipboard } from "lucide-react";
 import { BorderBeam } from "../ui/border-beam";
 
 export default function TextArea() {
@@ -10,7 +10,7 @@ export default function TextArea() {
       <div className="flex items-center justify-between">
         {/* Search box and search button container */}
         <div className="flex items-center space-x-2">
-          <div className="flex-shrink-0 flex items-center space-x-2 max-w-xs">
+          <div className="flex-shrink-0 flex items-center space-x-2 max-w-s">
             <Input type="text" placeholder="Search wiki..." className="w-60" />{" "}
             {/* Set desired width */}
             <Button variant="outline" size="icon">

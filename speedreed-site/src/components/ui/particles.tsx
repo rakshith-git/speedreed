@@ -17,7 +17,7 @@ function MousePosition(): MousePosition {
   useEffect(() => {
     const handleMouseMove = (event: MouseEvent) => {
       // setMousePosition({ x: event.clientX, y: event.clientY });
-      setMousePosition({ x: event.clientX / 10, y: event.clientY / 10 });
+      setMousePosition({ x: event.clientX / 1, y: event.clientY / 1 });
     };
 
     window.addEventListener("mousemove", handleMouseMove);
