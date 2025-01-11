@@ -90,6 +90,7 @@ export default function Home() {
         </h1>
       </div>
       <div className="mt-4 dark:text-gray-100"></div>
+      <div><Textbox /></div>
       {render}
 
       <div className="flex justify-center">
