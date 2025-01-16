@@ -26,6 +26,7 @@ export default function RSVPReader() {
     function: 1,
     modifiers: 1,
   });
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const getText = async () => {
@@ -34,7 +35,7 @@ export default function RSVPReader() {
           doc(db, "users", auth.currentUser.uid)
         );
         const userData = userTextDoc.data();
-        setTheText(userData.text);
+        setTheText(userData.text || "");
         setSpeechVal(userData.defaultSpeech);
         setRangeVal(userData.defaultSpeed);
         setIsBionic(userData.bionic);
@@ -48,6 +49,7 @@ export default function RSVPReader() {
         });
       } catch (error) {
         console.log(error);
+        setError("Failed to fetch user data. Using default settings.");
       }
     };
 
@@ -57,10 +59,21 @@ export default function RSVPReader() {
   useEffect(() => {
     const processText = async () => {
       const text = rsvpText !== "" ? rsvpText : theText;
+      if (!text) {
+        setError("No text available. Please set some text before starting.");
+        return;
+      }
       const words = convertStringToArray(text);
       setTextArray(words);
-      const posData = await fetchPOSTags(text);
-      setPosData(posData);
+      try {
+        const posData = await fetchPOSTags(text);
+        setPosData(posData);
+        setError(null);
+      } catch (error) {
+        console.error("Error fetching POS tags:", error);
+        setPosData({ groups: [], tokens: [] });
+        setError("Failed to fetch word types. Using default display times.");
+      }
     };
 
     processText();
@@ -72,23 +85,20 @@ export default function RSVPReader() {
   }
 
   async function fetchPOSTags(text) {
-    try {
-      const response = await fetch(
-        "https://spacy-server-x6nd.onrender.com/pos-tag",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ text }),
-        }
-      );
-      console.log("fetched tags successfully");
-      return await response.json();
-    } catch (error) {
-      console.error("Error fetching POS tags:", error);
-      return { groups: [], tokens: [] };
+    const response = await fetch(
+      "https://spacy-server-x6nd.onrender.com/pos-tag",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ text }),
+      }
+    );
+    if (!response.ok) {
+      throw new Error("Failed to fetch POS tags");
     }
+    return await response.json();
   }
 
   useEffect(() => {
@@ -122,10 +132,14 @@ export default function RSVPReader() {
     textArray,
     posData,
     multipliers,
+    isburst,
   ]);
 
   function calculateDelay(index) {
     const baseDelay = 60000 / rangeVal;
+    if (posData.groups.length === 0) {
+      return baseDelay + extraTime;
+    }
     const wordType = posData.groups[index];
     const multiplier = multipliers[wordType] || 1;
     return baseDelay * multiplier + extraTime;
@@ -177,6 +191,38 @@ export default function RSVPReader() {
       setSpeaking(false);
     }
   };
+
+  function Bionic({ word }) {
+    if (word === undefined) {
+      word = "";
+    }
+    const halfLength = Math.floor(word.length / 2);
+    const firstHalf = word.slice(0, halfLength);
+    const secondHalf = word.slice(halfLength);
+
+    return (
+      <div className="text-gray-400 text-6xl font-roboto">
+        <span className="text-white text-6xl font-roboto">{firstHalf}</span>
+        {secondHalf}
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <p className="text-red-500 text-xl">{error}</p>
+      </div>
+    );
+  }
+
+  if (textArray.length === 0) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <p className="text-gray-500 text-xl">Loading or no text available...</p>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -272,21 +318,5 @@ export default function RSVPReader() {
         </button>
       </div>
     </>
-  );
-}
-
-export function Bionic({ word }) {
-  if (word === undefined) {
-    word = "";
-  }
-  const halfLength = Math.floor(word.length / 2);
-  const firstHalf = word.slice(0, halfLength);
-  const secondHalf = word.slice(halfLength);
-
-  return (
-    <div className="text-gray-400 text-6xl font-roboto">
-      <span className="text-white text-6xl font-roboto">{firstHalf}</span>
-      {secondHalf}
-    </div>
   );
 }
