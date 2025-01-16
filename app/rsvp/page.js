@@ -1,23 +1,11 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { useAppSelector } from "app/redux/store.js";
-import { auth } from "app/firebaseConfig.js";
+import { auth, db } from "app/firebaseConfig.js";
+import { doc, getDoc } from "firebase/firestore";
 
-import {
-  doc,
-  getDoc,
-  collection,
-  addDoc,
-  setDoc,
-  updateDoc,
-} from "firebase/firestore";
-import { db } from "../firebaseConfig";
-
-export default function Home() {
-  let count = 0;
-
+export default function RSVPReader() {
   const rsvpText = useAppSelector((state) => state.textReducer.value.text);
-  const userRef = collection(db, "users");
   const [theText, setTheText] = useState("");
   const [rangeVal, setRangeVal] = useState(240);
   const [speechVal, setSpeechVal] = useState(1);
@@ -30,19 +18,34 @@ export default function Home() {
   const [refrence, setRefrence] = useState("");
   const [refrenceLength, setRefrenceLength] = useState(10);
   const [extraTime, setExtraTime] = useState(0);
+  const [textArray, setTextArray] = useState([]);
+  const [posData, setPosData] = useState({ groups: [], tokens: [] });
+  const [multipliers, setMultipliers] = useState({
+    namedEntity: 1,
+    content: 1,
+    function: 1,
+    modifiers: 1,
+  });
+
   useEffect(() => {
     const getText = async () => {
       try {
         const userTextDoc = await getDoc(
-          doc(db, "users", auth.currentUser.uid),
+          doc(db, "users", auth.currentUser.uid)
         );
-        setTheText(userTextDoc.data().text);
-        setSpeechVal(userTextDoc.data().defaultSpeech);
-        setRangeVal(userTextDoc.data().defaultSpeed);
-        setIsBionic(userTextDoc.data().bionic);
-        setRefrenceLength(userTextDoc.data().refrence);
-        setIsBurst(userTextDoc.data().burst);
-        console.log(theText);
+        const userData = userTextDoc.data();
+        setTheText(userData.text);
+        setSpeechVal(userData.defaultSpeech);
+        setRangeVal(userData.defaultSpeed);
+        setIsBionic(userData.bionic);
+        setRefrenceLength(userData.refrence);
+        setIsBurst(userData.burst);
+        setMultipliers({
+          namedEntity: userData.namedEntity,
+          content: userData.content,
+          function: userData.function,
+          modifiers: userData.modifiers,
+        });
       } catch (error) {
         console.log(error);
       }
@@ -50,17 +53,43 @@ export default function Home() {
 
     getText();
   }, []);
+
+  useEffect(() => {
+    const processText = async () => {
+      const text = rsvpText !== "" ? rsvpText : theText;
+      const words = convertStringToArray(text);
+      setTextArray(words);
+      const posData = await fetchPOSTags(text);
+      setPosData(posData);
+    };
+
+    processText();
+  }, [rsvpText, theText]);
+
   function convertStringToArray(text) {
-    // Replace new lines with spaces
     const normalizedText = text.replace(/\n/g, " ");
-
-    // Split the normalized text into an array of words
-    const wordsArray = normalizedText.split(/\s+/);
-
-    return wordsArray;
+    return normalizedText.split(/\s+/);
   }
 
-  const textArray = convertStringToArray(rsvpText !== "" ? rsvpText : theText);
+  async function fetchPOSTags(text) {
+    try {
+      const response = await fetch(
+        "https://spacy-server-x6nd.onrender.com/pos-tag",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ text }),
+        }
+      );
+      console.log("fetched tags successfully");
+      return await response.json();
+    } catch (error) {
+      console.error("Error fetching POS tags:", error);
+      return { groups: [], tokens: [] };
+    }
+  }
 
   useEffect(() => {
     if (progress >= 100) {
@@ -73,42 +102,44 @@ export default function Home() {
         ? setExtraTime((60000 / rangeVal) * 4)
         : setExtraTime(0);
     }
-    const intervalId = setInterval(
-      () => {
-        if (increment === 0 || count >= textArray.length - 1)
-          return () => clearInterval(intervalId);
+    const intervalId = setInterval(() => {
+      if (increment === 0 || currentIndex >= textArray.length - 1)
+        return () => clearInterval(intervalId);
 
-        setCurrentIndex((currentIndex) => {
-          setProgress(1 + (currentIndex / textArray.length) * 100);
+      setCurrentIndex((prevIndex) => {
+        const newIndex = prevIndex + increment;
+        setProgress(1 + (newIndex / textArray.length) * 100);
+        return newIndex;
+      });
+    }, calculateDelay(currentIndex));
 
-          return currentIndex + increment;
-        });
-
-        count++;
-      },
-      60000 / rangeVal + extraTime,
-    ); // Change the interval time here to adjust the speed of the RSVP
     return () => clearInterval(intervalId);
-  }, [rangeVal, increment, progress]);
+  }, [
+    rangeVal,
+    increment,
+    progress,
+    currentIndex,
+    textArray,
+    posData,
+    multipliers,
+  ]);
 
-  //creating 20 word reference array
+  function calculateDelay(index) {
+    const baseDelay = 60000 / rangeVal;
+    const wordType = posData.groups[index];
+    const multiplier = multipliers[wordType] || 1;
+    return baseDelay * multiplier + extraTime;
+  }
+
   useEffect(() => {
-    console.log(currentIndex - parseInt(refrenceLength), currentIndex + parseInt(refrenceLength))
-    let startIndex = currentIndex- parseInt(refrenceLength);
-    let endAtIndex = currentIndex+ parseInt(refrenceLength);
-    if (currentIndex % refrenceLength == 0)
-    {
-      
-      setRefrence(
-        getSubstringFromArray(textArray, startIndex, endAtIndex)
-        
-      );
+    let startIndex = currentIndex - parseInt(refrenceLength);
+    let endAtIndex = currentIndex + parseInt(refrenceLength);
+    if (currentIndex % refrenceLength == 0) {
+      setRefrence(getSubstringFromArray(textArray, startIndex, endAtIndex));
     }
-      console.log(refrence,refrenceLength,currentIndex,currentIndex % refrenceLength == 0);
-  }, [currentIndex,refrenceLength]);
+  }, [currentIndex, refrenceLength, textArray]);
 
   function getSubstringFromArray(textArray, startIndex, endIndex) {
-    // Validate input
     if (startIndex < 0) startIndex = 0;
     if (endIndex >= textArray.length - 1) endIndex = textArray.length - 1;
     if (
@@ -123,18 +154,14 @@ export default function Home() {
     ) {
       return "";
     }
-
-    // Extract the substring
-    const substring = textArray.slice(startIndex, endIndex + 1).join(" ");
-
-    return substring;
+    return textArray.slice(startIndex, endIndex + 1).join(" ");
   }
 
   const handleSpeak = () => {
     if ("speechSynthesis" in window) {
       const synthesis = window.speechSynthesis;
       const utterance = new SpeechSynthesisUtterance(
-        getSubstringFromArray(textArray, currentIndex, textArray.length),
+        getSubstringFromArray(textArray, currentIndex, textArray.length)
       );
       utterance.rate = speechVal;
       synthesis.speak(utterance);
@@ -143,6 +170,7 @@ export default function Home() {
       console.log("Speech synthesis is not supported in this browser.");
     }
   };
+
   const handleStop = () => {
     if ("speechSynthesis" in window && speaking) {
       window.speechSynthesis.cancel();
@@ -179,7 +207,7 @@ export default function Home() {
             onClick={() => {
               if (currentIndex > 10) {
                 setCurrentIndex(currentIndex - 10);
-                setProgress(1 + (currentIndex / textArray.length) * 100);
+                setProgress(1 + ((currentIndex - 10) / textArray.length) * 100);
               }
             }}
           >
@@ -229,7 +257,6 @@ export default function Home() {
             setProgress(0);
             setCurrentIndex(0);
             setIncrement(0);
-            count = 0;
             window.speechSynthesis.cancel();
           }}
           className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"
@@ -247,6 +274,7 @@ export default function Home() {
     </>
   );
 }
+
 export function Bionic({ word }) {
   if (word === undefined) {
     word = "";

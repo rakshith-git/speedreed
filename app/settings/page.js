@@ -15,8 +15,12 @@ function Home() {
   const [speechVal, setSpeechVal] = useState(3);
   const [bionicVal, setBionicVal] = useState(0);
   const [burstVal, setBurstVal] = useState(0);
-  const [refrenceVal,setRefrenceVal] = useState(10);
+  const [refrenceVal, setRefrenceVal] = useState(10);
   const [bionicText, setBionicText] = useState("Normal");
+  const [namedEntityVal, setNamedEntityVal] = useState(1.0);
+  const [contentVal, setContentVal] = useState(1.0);
+  const [functionVal, setFunctionVal] = useState(1.0);
+  const [modifiersVal, setModifiersVal] = useState(1.0);
 
   const [isAuth, setIsAuth] = useState(false);
   useEffect(() => {
@@ -36,6 +40,10 @@ function Home() {
         bionic: parseInt(bionicVal),
         burst: parseInt(burstVal),
         refrence: refrenceVal,
+        namedEntity: namedEntityVal,
+        content: contentVal,
+        function: functionVal,
+        modifiers: modifiersVal,
       });
     } catch (error) {
       console.log(error);
@@ -56,6 +64,10 @@ function Home() {
             setBionicVal(userData.bionic);
             setBurstVal(userData.burst);
             setRefrenceVal(userData.refrence);
+            setNamedEntityVal(userData.namedEntity || 1.0);
+            setContentVal(userData.content || 1.0);
+            setFunctionVal(userData.function || 1.0);
+            setModifiersVal(userData.modifiers || 1.0);
             console.log(userData);
           } else {
             console.log("User document does not exist");
@@ -210,6 +222,125 @@ function Home() {
               setBurstVal(isChecked ? 1 : 0);
             }}
           />
+        </div>
+      </div>
+
+      <div className="mt-12 mb-8">
+        <h2 className="flex my-4 mx-4 text-xl font-medium text-gray-900 dark:text-white">
+          Advanced Options
+        </h2>
+        <p className="mx-4 text-sm text-gray-500 mb-6">
+          These options allow you to fine-tune the emphasis on different types
+          of words and elements in the text.
+        </p>
+
+        <div className="space-y-8">
+          <div>
+            <label
+              htmlFor="named-entity"
+              className="flex my-4 mx-4 text-xl font-medium text-gray-900 dark:text-white"
+            >
+              Named Entity: {namedEntityVal.toFixed(2)}x
+            </label>
+            <p className="mx-4 text-sm text-gray-500 mb-2">
+              Adjust emphasis on special words with higher contextual
+              importance.
+            </p>
+            <div className="flex justify-center">
+              <input
+                id="named-entity"
+                type="range"
+                min={0.3}
+                max={3}
+                step={0.01}
+                value={namedEntityVal}
+                onChange={(event) =>
+                  setNamedEntityVal(parseFloat(event.target.value))
+                }
+                className="w-10/12 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label
+              htmlFor="content"
+              className="flex my-4 mx-4 text-xl font-medium text-gray-900 dark:text-white"
+            >
+              Content: {contentVal.toFixed(2)}x
+            </label>
+            <p className="mx-4 text-sm text-gray-500 mb-2">
+              Adjust emphasis on nouns, proper nouns, verbs, adjectives, and
+              interjections.
+            </p>
+            <div className="flex justify-center">
+              <input
+                id="content"
+                type="range"
+                min={0.3}
+                max={3}
+                step={0.01}
+                value={contentVal}
+                onChange={(event) =>
+                  setContentVal(parseFloat(event.target.value))
+                }
+                className="w-10/12 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label
+              htmlFor="function"
+              className="flex my-4 mx-4 text-xl font-medium text-gray-900 dark:text-white"
+            >
+              Function: {functionVal.toFixed(2)}x
+            </label>
+            <p className="mx-4 text-sm text-gray-500 mb-2">
+              Adjust emphasis on determiners, pronouns, adpositions, auxiliary
+              verbs, and conjunctions.
+            </p>
+            <div className="flex justify-center">
+              <input
+                id="function"
+                type="range"
+                min={0.3}
+                max={3}
+                step={0.01}
+                value={functionVal}
+                onChange={(event) =>
+                  setFunctionVal(parseFloat(event.target.value))
+                }
+                className="w-10/12 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label
+              htmlFor="modifiers"
+              className="flex my-4 mx-4 text-xl font-medium text-gray-900 dark:text-white"
+            >
+              Modifiers: {modifiersVal.toFixed(2)}x
+            </label>
+            <p className="mx-4 text-sm text-gray-500 mb-2">
+              Adjust emphasis on symbols and other modifying elements.
+            </p>
+            <div className="flex justify-center">
+              <input
+                id="modifiers"
+                type="range"
+                min={0.3}
+                max={3}
+                step={0.01}
+                value={modifiersVal}
+                onChange={(event) =>
+                  setModifiersVal(parseFloat(event.target.value))
+                }
+                className="w-10/12 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
+              />
+            </div>
+          </div>
         </div>
       </div>
       <div className="flex my-10 py-10 justify-center">
