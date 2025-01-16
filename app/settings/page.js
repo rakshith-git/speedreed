@@ -251,7 +251,7 @@ function Home() {
                 id="named-entity"
                 type="range"
                 min={0.3}
-                max={3}
+                max={5}
                 step={0.01}
                 value={namedEntityVal}
                 onChange={(event) =>
@@ -278,7 +278,7 @@ function Home() {
                 id="content"
                 type="range"
                 min={0.3}
-                max={3}
+                max={5}
                 step={0.01}
                 value={contentVal}
                 onChange={(event) =>
@@ -305,7 +305,7 @@ function Home() {
                 id="function"
                 type="range"
                 min={0.3}
-                max={3}
+                max={5}
                 step={0.01}
                 value={functionVal}
                 onChange={(event) =>
@@ -331,7 +331,7 @@ function Home() {
                 id="modifiers"
                 type="range"
                 min={0.3}
-                max={3}
+                max={5}
                 step={0.01}
                 value={modifiersVal}
                 onChange={(event) =>
