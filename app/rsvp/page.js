@@ -46,7 +46,6 @@ export default function RSVPReader() {
 
   // AI-related states
   const [isAIMode, setIsAIMode] = useState(DEFAULT_SETTINGS.isAIMode);
-  const [aiDelays, setAiDelays] = useState([]);
 
   useEffect(() => {
     // Check if user is authenticated
@@ -107,32 +106,6 @@ export default function RSVPReader() {
     getText();
   }, [isAuth]);
 
-  // New function to fetch AI delays
-  const fetchAIDelays = async (text) => {
-    try {
-      const response = await fetch("https://bonemechanic-rsvp-server.hf.space/pos-tag", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ text }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch AI delays");
-      }
-
-      const data = await response.json();
-      console.log(data.results[0].delays);
-      return data.results[0].delays;
-    } catch (error) {
-      console.error("Error fetching AI delays:", error);
-      setError("Failed to fetch AI delays. Reverting to standard mode.");
-      setIsAIMode(false);
-      return null;
-    }
-  };
-
   useEffect(() => {
     const processText = async () => {
       const text = rsvpText !== "" ? rsvpText : theText;
@@ -143,22 +116,15 @@ export default function RSVPReader() {
       const words = convertStringToArray(text);
       setTextArray(words);
 
-      // Fetch AI delays if in AI mode
-      if (isAIMode) {
-        const delays = await fetchAIDelays(text);
-        if (delays) {
-          setAiDelays(delays);
-        }
-      } else {
-        try {
-          const posData = await fetchPOSTags(text);
-          setPosData(posData);
-          setError(null);
-        } catch (error) {
-          console.error("Error fetching POS tags:", error);
-          setPosData({ groups: [], tokens: [] });
-          setError("Failed to fetch word types. Using default display times.");
-        }
+      // Fetch POS tags regardless of AI mode
+      try {
+        const posData = await fetchPOSTags(text);
+        setPosData(posData);
+        setError(null);
+      } catch (error) {
+        console.error("Error fetching POS tags:", error);
+        setPosData({ groups: [], tokens: [] });
+        setError("Failed to fetch word types. Using default display times.");
       }
     };
 
@@ -217,14 +183,9 @@ export default function RSVPReader() {
     multipliers,
     isburst,
     isAIMode,
-    aiDelays,
   ]);
 
   function calculateDelay(index) {
-    if (isAIMode && aiDelays[index]) {
-      return aiDelays[index].delay * 1000; // Convert to milliseconds
-    }
-
     const baseDelay = 60000 / rangeVal;
     if (posData.groups.length === 0) {
       return baseDelay + extraTime;
