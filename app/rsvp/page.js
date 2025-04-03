@@ -171,7 +171,7 @@ export default function RSVPReader() {
   }
 
   async function fetchPOSTags(text) {
-    const response = await fetch("http://127.0.0.1:5001/pos-tag", {
+    const response = await fetch("https://bonemechanic-rsvp-server.hf.space/pos-tag", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
