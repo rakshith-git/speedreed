@@ -4,57 +4,134 @@ import { useAppSelector } from "app/redux/store.js";
 import { auth, db } from "app/firebaseConfig.js";
 import { doc, getDoc } from "firebase/firestore";
 
+// Default settings to use if no settings are found
+const DEFAULT_SETTINGS = {
+  text: "",
+  defaultSpeed: 240,
+  defaultSpeech: 1,
+  bionic: 0,
+  refrence: 10,
+  burst: 0,
+  namedEntity: 1.0,
+  content: 1.0,
+  function: 1.0,
+  modifiers: 1.0,
+  isAIMode: false,
+};
+
 export default function RSVPReader() {
   const rsvpText = useAppSelector((state) => state.textReducer.value.text);
   const [theText, setTheText] = useState("");
-  const [rangeVal, setRangeVal] = useState(240);
-  const [speechVal, setSpeechVal] = useState(1);
-  const [isBionic, setIsBionic] = useState(0);
-  const [isburst, setIsBurst] = useState(0);
+  const [rangeVal, setRangeVal] = useState(DEFAULT_SETTINGS.defaultSpeed);
+  const [speechVal, setSpeechVal] = useState(DEFAULT_SETTINGS.defaultSpeech);
+  const [isBionic, setIsBionic] = useState(DEFAULT_SETTINGS.bionic);
+  const [isburst, setIsBurst] = useState(DEFAULT_SETTINGS.burst);
   const [speaking, setSpeaking] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [increment, setIncrement] = useState(0);
   const [progress, setProgress] = useState(0);
   const [refrence, setRefrence] = useState("");
-  const [refrenceLength, setRefrenceLength] = useState(10);
+  const [refrenceLength, setRefrenceLength] = useState(DEFAULT_SETTINGS.refrence);
   const [extraTime, setExtraTime] = useState(0);
   const [textArray, setTextArray] = useState([]);
   const [posData, setPosData] = useState({ groups: [], tokens: [] });
   const [multipliers, setMultipliers] = useState({
-    namedEntity: 1,
-    content: 1,
-    function: 1,
-    modifiers: 1,
+    namedEntity: DEFAULT_SETTINGS.namedEntity,
+    content: DEFAULT_SETTINGS.content,
+    function: DEFAULT_SETTINGS.function,
+    modifiers: DEFAULT_SETTINGS.modifiers,
   });
   const [error, setError] = useState(null);
+  const [isAuth, setIsAuth] = useState(false);
+
+  // AI-related states
+  const [isAIMode, setIsAIMode] = useState(DEFAULT_SETTINGS.isAIMode);
+  const [aiDelays, setAiDelays] = useState([]);
+
+  useEffect(() => {
+    // Check if user is authenticated
+    if (localStorage.getItem("isAuth") === "true") {
+      setIsAuth(true);
+    } else {
+      setIsAuth(false);
+    }
+  }, []);
 
   useEffect(() => {
     const getText = async () => {
       try {
-        const userTextDoc = await getDoc(
-          doc(db, "users", auth.currentUser.uid)
-        );
-        const userData = userTextDoc.data();
-        setTheText(userData.text || "");
-        setSpeechVal(userData.defaultSpeech);
-        setRangeVal(userData.defaultSpeed);
-        setIsBionic(userData.bionic);
-        setRefrenceLength(userData.refrence);
-        setIsBurst(userData.burst);
-        setMultipliers({
-          namedEntity: userData.namedEntity,
-          content: userData.content,
-          function: userData.function,
-          modifiers: userData.modifiers,
-        });
+        if (isAuth && auth.currentUser) {
+          // Get settings from Firebase if logged in
+          const userTextDoc = await getDoc(
+            doc(db, "users", auth.currentUser.uid)
+          );
+          const userData = userTextDoc.data();
+          setTheText(userData.text || "");
+          setSpeechVal(userData.defaultSpeech);
+          setRangeVal(userData.defaultSpeed);
+          setIsBionic(userData.bionic);
+          setRefrenceLength(userData.refrence);
+          setIsBurst(userData.burst);
+          setIsAIMode(userData.isAIMode || false);
+          setMultipliers({
+            namedEntity: userData.namedEntity || DEFAULT_SETTINGS.namedEntity,
+            content: userData.content || DEFAULT_SETTINGS.content,
+            function: userData.function || DEFAULT_SETTINGS.function,
+            modifiers: userData.modifiers || DEFAULT_SETTINGS.modifiers,
+          });
+        } else {
+          // Get settings from localStorage if not logged in
+          const localSettings = localStorage.getItem("userSettings");
+          if (localSettings) {
+            const settings = JSON.parse(localSettings);
+            setSpeechVal(settings.defaultSpeech);
+            setRangeVal(settings.defaultSpeed);
+            setIsBionic(settings.bionic);
+            setRefrenceLength(settings.refrence);
+            setIsBurst(settings.burst);
+            setIsAIMode(settings.isAIMode || false);
+            setMultipliers({
+              namedEntity: settings.namedEntity || DEFAULT_SETTINGS.namedEntity,
+              content: settings.content || DEFAULT_SETTINGS.content,
+              function: settings.function || DEFAULT_SETTINGS.function,
+              modifiers: settings.modifiers || DEFAULT_SETTINGS.modifiers,
+            });
+          }
+        }
       } catch (error) {
         console.log(error);
-        setError("Failed to fetch user data. Using default settings.");
+        setError("Error loading settings. Using default settings.");
       }
     };
 
     getText();
-  }, []);
+  }, [isAuth]);
+
+  // New function to fetch AI delays
+  const fetchAIDelays = async (text) => {
+    try {
+      const response = await fetch("https://bonemechanic-rsvp-server.hf.space/pos-tag", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ text }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch AI delays");
+      }
+
+      const data = await response.json();
+      console.log(data.results[0].delays);
+      return data.results[0].delays;
+    } catch (error) {
+      console.error("Error fetching AI delays:", error);
+      setError("Failed to fetch AI delays. Reverting to standard mode.");
+      setIsAIMode(false);
+      return null;
+    }
+  };
 
   useEffect(() => {
     const processText = async () => {
@@ -65,19 +142,28 @@ export default function RSVPReader() {
       }
       const words = convertStringToArray(text);
       setTextArray(words);
-      try {
-        const posData = await fetchPOSTags(text);
-        setPosData(posData);
-        setError(null);
-      } catch (error) {
-        console.error("Error fetching POS tags:", error);
-        setPosData({ groups: [], tokens: [] });
-        setError("Failed to fetch word types. Using default display times.");
+
+      // Fetch AI delays if in AI mode
+      if (isAIMode) {
+        const delays = await fetchAIDelays(text);
+        if (delays) {
+          setAiDelays(delays);
+        }
+      } else {
+        try {
+          const posData = await fetchPOSTags(text);
+          setPosData(posData);
+          setError(null);
+        } catch (error) {
+          console.error("Error fetching POS tags:", error);
+          setPosData({ groups: [], tokens: [] });
+          setError("Failed to fetch word types. Using default display times.");
+        }
       }
     };
 
     processText();
-  }, [rsvpText, theText]);
+  }, [rsvpText, theText, isAIMode]);
 
   function convertStringToArray(text) {
     const normalizedText = text.replace(/\n/g, " ");
@@ -85,16 +171,13 @@ export default function RSVPReader() {
   }
 
   async function fetchPOSTags(text) {
-    const response = await fetch(
-      "https://spacy-server-x6nd.onrender.com/pos-tag",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ text }),
-      }
-    );
+    const response = await fetch("http://127.0.0.1:5001/pos-tag", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ text }),
+    });
     if (!response.ok) {
       throw new Error("Failed to fetch POS tags");
     }
@@ -107,7 +190,7 @@ export default function RSVPReader() {
       setIncrement(0);
       setCurrentIndex(textArray.length - 1);
     }
-    if (textArray[currentIndex] && isburst === 1) {
+    if (textArray[currentIndex] && isburst === 1 && !isAIMode) {
       textArray[currentIndex].includes(".")
         ? setExtraTime((60000 / rangeVal) * 4)
         : setExtraTime(0);
@@ -133,9 +216,15 @@ export default function RSVPReader() {
     posData,
     multipliers,
     isburst,
+    isAIMode,
+    aiDelays,
   ]);
 
   function calculateDelay(index) {
+    if (isAIMode && aiDelays[index]) {
+      return aiDelays[index].delay * 1000; // Convert to milliseconds
+    }
+
     const baseDelay = 60000 / rangeVal;
     if (posData.groups.length === 0) {
       return baseDelay + extraTime;
@@ -246,6 +335,7 @@ export default function RSVPReader() {
           />
         </div>
       </div>
+
       <div className="flex justify-center items-center">
         {increment === 0 && currentIndex > 10 && (
           <button
@@ -262,26 +352,39 @@ export default function RSVPReader() {
         )}
       </div>
 
-      <div className="flex justify-center">
-        <label
-          htmlFor="default-range"
-          className="block mb-4 text-sm font-medium text-gray-900 dark:text-white"
-        >
-          {rangeVal} Words/Minute
-        </label>
-      </div>
+      {!isAIMode && (
+        <>
+          <div className="flex justify-center">
+            <label
+              htmlFor="default-range"
+              className="block mb-4 text-sm font-medium text-gray-900 dark:text-white"
+            >
+              {rangeVal} Words/Minute
+            </label>
+          </div>
 
-      <div className="flex justify-center">
-        <input
-          id="default-range"
-          type="range"
-          min={100}
-          max={1000}
-          value={rangeVal}
-          onChange={(event) => setRangeVal(event.target.value)}
-          className="w-10/12 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
-        />
-      </div>
+          <div className="flex justify-center">
+            <input
+              id="default-range"
+              type="range"
+              min={100}
+              max={1000}
+              value={rangeVal}
+              onChange={(event) => setRangeVal(event.target.value)}
+              className="w-10/12 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
+            />
+          </div>
+        </>
+      )}
+
+      {isAIMode && (
+        <div className="flex justify-center">
+          <p className="text-center mb-4 text-sm font-medium text-gray-900 dark:text-white">
+            AI Mode: Reading speed adjusts automatically based on content complexity
+          </p>
+        </div>
+      )}
+
       <div className="flex my-10 justify-center">
         <button
           type="button"
