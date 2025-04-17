@@ -16,6 +16,8 @@ const DEFAULT_SETTINGS = {
   content: 1.0,
   function: 1.0,
   modifiers: 1.0,
+  wordLengthMultiplier: 1.0,
+  perCharacterDelay: 0.1,
   isAIMode: false,
 };
 
@@ -40,9 +42,12 @@ export default function RSVPReader() {
     content: DEFAULT_SETTINGS.content,
     function: DEFAULT_SETTINGS.function,
     modifiers: DEFAULT_SETTINGS.modifiers,
+    wordLengthMultiplier: DEFAULT_SETTINGS.wordLengthMultiplier,
+    perCharacterDelay: DEFAULT_SETTINGS.perCharacterDelay,
   });
   const [error, setError] = useState(null);
   const [isAuth, setIsAuth] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   // AI-related states
   const [isAIMode, setIsAIMode] = useState(DEFAULT_SETTINGS.isAIMode);
@@ -77,6 +82,8 @@ export default function RSVPReader() {
             content: userData.content || DEFAULT_SETTINGS.content,
             function: userData.function || DEFAULT_SETTINGS.function,
             modifiers: userData.modifiers || DEFAULT_SETTINGS.modifiers,
+            wordLengthMultiplier: userData.wordLengthMultiplier || DEFAULT_SETTINGS.wordLengthMultiplier,
+            perCharacterDelay: userData.perCharacterDelay || DEFAULT_SETTINGS.perCharacterDelay,
           });
         } else {
           // Get settings from localStorage if not logged in
@@ -94,6 +101,8 @@ export default function RSVPReader() {
               content: settings.content || DEFAULT_SETTINGS.content,
               function: settings.function || DEFAULT_SETTINGS.function,
               modifiers: settings.modifiers || DEFAULT_SETTINGS.modifiers,
+              wordLengthMultiplier: settings.wordLengthMultiplier || DEFAULT_SETTINGS.wordLengthMultiplier,
+              perCharacterDelay: settings.perCharacterDelay || DEFAULT_SETTINGS.perCharacterDelay,
             });
           }
         }
@@ -116,6 +125,11 @@ export default function RSVPReader() {
       const words = convertStringToArray(text);
       setTextArray(words);
 
+      // Set loading state if AI mode is enabled
+      if (isAIMode) {
+        setIsLoading(true);
+      }
+
       // Fetch POS tags regardless of AI mode
       try {
         const posData = await fetchPOSTags(text);
@@ -125,6 +139,8 @@ export default function RSVPReader() {
         console.error("Error fetching POS tags:", error);
         setPosData({ groups: [], tokens: [] });
         setError("Failed to fetch word types. Using default display times.");
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -187,12 +203,20 @@ export default function RSVPReader() {
 
   function calculateDelay(index) {
     const baseDelay = 60000 / rangeVal;
+
     if (posData.groups.length === 0) {
       return baseDelay + extraTime;
     }
+
+    const word = textArray[index] || "";
     const wordType = posData.groups[index];
     const multiplier = multipliers[wordType] || 1;
-    return baseDelay * multiplier + extraTime;
+
+    // Apply word length multiplier - dynamically scaled for each character length
+    // Using the user-configured perCharacterDelay to control the impact of each character
+    const wordLengthFactor = word.length === 0 ? 1 : (1 + ((word.length - 1) * multipliers.perCharacterDelay * multipliers.wordLengthMultiplier));
+
+    return baseDelay * multiplier * wordLengthFactor + extraTime;
   }
 
   useEffect(() => {
@@ -340,9 +364,18 @@ export default function RSVPReader() {
 
       {isAIMode && (
         <div className="flex justify-center">
-          <p className="text-center mb-4 text-sm font-medium text-gray-900 dark:text-white">
-            AI Mode: Reading speed adjusts automatically based on content complexity
-          </p>
+          {isLoading ? (
+            <div className="flex flex-col items-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500 mb-2"></div>
+              <p className="text-center mb-4 text-sm font-medium text-gray-900 dark:text-white">
+                Loading AI analysis... Please wait...
+              </p>
+            </div>
+          ) : (
+            <p className="text-center mb-4 text-sm font-medium text-gray-900 dark:text-white">
+              AI Mode: Reading speed adjusts automatically based on content complexity
+            </p>
+          )}
         </div>
       )}
 
@@ -357,7 +390,11 @@ export default function RSVPReader() {
               setIncrement(1);
             }
           }}
-          className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"
+          disabled={isAIMode && isLoading}
+          className={`text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 ${isAIMode && isLoading
+            ? "opacity-50 cursor-not-allowed"
+            : "dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"
+            }`}
         >
           {increment === 1 ? "Stop" : "Start"}
         </button>
@@ -369,14 +406,22 @@ export default function RSVPReader() {
             setIncrement(0);
             window.speechSynthesis.cancel();
           }}
-          className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"
+          disabled={isAIMode && isLoading}
+          className={`text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 ${isAIMode && isLoading
+            ? "opacity-50 cursor-not-allowed"
+            : "dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"
+            }`}
         >
           Restart
         </button>
         <button
           type="button"
           onClick={speaking === false ? handleSpeak : handleStop}
-          className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"
+          disabled={isAIMode && isLoading}
+          className={`text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 ${isAIMode && isLoading
+            ? "opacity-50 cursor-not-allowed"
+            : "dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"
+            }`}
         >
           {speaking === true ? "Stop" : "Speak"}
         </button>

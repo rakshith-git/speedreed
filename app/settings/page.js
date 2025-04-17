@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   doc,
   getDoc,
@@ -18,12 +18,26 @@ const DEFAULT_SETTINGS = {
   bionic: 0,
   burst: 0,
   refrence: 10,
-  namedEntity: 1.0,
-  content: 1.0,
-  function: 1.0,
+  namedEntity: 3.0,
+  content: 2.0,
+  function: 0.80,
   modifiers: 1.0,
-  isAIMode: false,
+  wordLengthMultiplier: 1.5,
+  perCharacterDelay: 0.08,
+  isAIMode: true,
 };
+
+// Debounce function to limit save operations
+function useDebounce(callback, delay) {
+  const debouncedFn = useCallback(
+    (...args) => {
+      const handler = setTimeout(() => callback(...args), delay);
+      return () => clearTimeout(handler);
+    },
+    [callback, delay]
+  );
+  return debouncedFn;
+}
 
 function Home() {
   const [rangeVal, setRangeVal] = useState(DEFAULT_SETTINGS.defaultSpeed);
@@ -36,10 +50,14 @@ function Home() {
   const [contentVal, setContentVal] = useState(DEFAULT_SETTINGS.content);
   const [functionVal, setFunctionVal] = useState(DEFAULT_SETTINGS.function);
   const [modifiersVal, setModifiersVal] = useState(DEFAULT_SETTINGS.modifiers);
+  const [wordLengthMultiplierVal, setWordLengthMultiplierVal] = useState(DEFAULT_SETTINGS.wordLengthMultiplier);
+  const [perCharacterDelayVal, setPerCharacterDelayVal] = useState(DEFAULT_SETTINGS.perCharacterDelay);
   const [isAIMode, setIsAIMode] = useState(DEFAULT_SETTINGS.isAIMode);
-
+  const [isSaving, setIsSaving] = useState(false);
+  const [activeTab, setActiveTab] = useState("basic");
   const [isAuth, setIsAuth] = useState(false);
-  
+  const [settingsChanged, setSettingsChanged] = useState(false);
+
   useEffect(() => {
     if (localStorage.getItem("isAuth") === "true") {
       setIsAuth(true);
@@ -50,6 +68,10 @@ function Home() {
   }, [bionicVal]);
 
   const saveSettings = async () => {
+    if (isSaving) return;
+
+    setIsSaving(true);
+
     // Create settings object
     const settings = {
       defaultSpeed: rangeVal,
@@ -61,6 +83,8 @@ function Home() {
       content: contentVal,
       function: functionVal,
       modifiers: modifiersVal,
+      wordLengthMultiplier: wordLengthMultiplierVal,
+      perCharacterDelay: perCharacterDelayVal,
       isAIMode: isAIMode,
     };
 
@@ -72,12 +96,25 @@ function Home() {
         // Save to localStorage if not logged in
         localStorage.setItem("userSettings", JSON.stringify(settings));
       }
-      alert("Settings saved successfully!");
+      console.log("Settings saved");
     } catch (error) {
       console.log(error);
-      alert("Failed to save settings.");
+    } finally {
+      setIsSaving(false);
+      setSettingsChanged(false);
     }
   };
+
+  // Create a debounced version of saveSettings with 500ms delay
+  const debouncedSave = useDebounce(saveSettings, 500);
+
+  // Mark settings as changed when any value updates
+  useEffect(() => {
+    setSettingsChanged(true);
+    // Start the debounced save
+    const cleanup = debouncedSave();
+    return cleanup;
+  }, [rangeVal, speechVal, bionicVal, burstVal, refrenceVal, namedEntityVal, contentVal, functionVal, modifiersVal, wordLengthMultiplierVal, perCharacterDelayVal, isAIMode]);
 
   useEffect(() => {
     const getData = async () => {
@@ -98,6 +135,8 @@ function Home() {
             setContentVal(userData.content || 1.0);
             setFunctionVal(userData.function || 1.0);
             setModifiersVal(userData.modifiers || 1.0);
+            setWordLengthMultiplierVal(userData.wordLengthMultiplier || 1.0);
+            setPerCharacterDelayVal(userData.perCharacterDelay || 0.1);
             setIsAIMode(userData.isAIMode || false);
           }
         } else {
@@ -114,6 +153,8 @@ function Home() {
             setContentVal(settings.content || 1.0);
             setFunctionVal(settings.function || 1.0);
             setModifiersVal(settings.modifiers || 1.0);
+            setWordLengthMultiplierVal(settings.wordLengthMultiplier || 1.0);
+            setPerCharacterDelayVal(settings.perCharacterDelay || 0.1);
             setIsAIMode(settings.isAIMode || false);
           }
         }
@@ -128,287 +169,370 @@ function Home() {
     setBionicText(bionicVal === 0 ? "Normal" : "Bionic");
   }, [bionicVal]);
 
+  const resetToDefaults = () => {
+    setRangeVal(DEFAULT_SETTINGS.defaultSpeed);
+    setSpeechVal(DEFAULT_SETTINGS.defaultSpeech);
+    setBionicVal(DEFAULT_SETTINGS.bionic);
+    setBurstVal(DEFAULT_SETTINGS.burst);
+    setRefrenceVal(DEFAULT_SETTINGS.refrence);
+    setNamedEntityVal(DEFAULT_SETTINGS.namedEntity);
+    setContentVal(DEFAULT_SETTINGS.content);
+    setFunctionVal(DEFAULT_SETTINGS.function);
+    setModifiersVal(DEFAULT_SETTINGS.modifiers);
+    setWordLengthMultiplierVal(DEFAULT_SETTINGS.wordLengthMultiplier);
+    setPerCharacterDelayVal(DEFAULT_SETTINGS.perCharacterDelay);
+    setIsAIMode(DEFAULT_SETTINGS.isAIMode);
+  };
+
   return (
-    <>
-      <label
-        htmlFor="default-range"
-        className="flex my-4 mx-4 text-xl font-medium text-gray-900 dark:text-white"
-      >
-        Set default speed to:
-      </label>
-      <div className="flex mt-8 justify-center">
-        <label
-          htmlFor="default-range"
-          className="block mb-4 mx-10 text-sm font-medium text-gray-900 dark:text-white"
-        >
-          {rangeVal} words/minute
-        </label>
-      </div>
-
-      <div className="flex justify-center">
-        <input
-          id="default-range"
-          type="range"
-          min={100}
-          max={1000}
-          value={rangeVal}
-          onChange={(event) => setRangeVal(event.target.value)}
-          className="w-10/12 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
-        />
-      </div>
-
-      <label
-        htmlFor="default-range"
-        className="flex my-4 mx-4 text-xl font-medium text-gray-900 dark:text-white"
-      >
-        Set default Reference words limit to:
-      </label>
-      <div className="flex mt-8 justify-center">
-        <label
-          htmlFor="default-range"
-          className="block mb-4 mx-10 text-sm font-medium text-gray-900 dark:text-white"
-        >
-          {refrenceVal} words
-        </label>
-      </div>
-
-      <div className="flex justify-center">
-        <input
-          id="default-range"
-          type="range"
-          min={1}
-          max={20}
-          value={refrenceVal}
-          onChange={(event) => setRefrenceVal(event.target.value)}
-          className="w-10/12 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
-        />
-      </div>
-
-      <label
-        htmlFor="default-range"
-        className="flex my-8 mx-4 text-xl font-medium text-gray-900 dark:text-white"
-      >
-        Set Speech speed to:
-      </label>
-      <div className="flex mt-8 justify-center">
-        <label
-          htmlFor="default-range"
-          className="block mb-4 mx-10 text-sm font-medium text-gray-900 dark:text-white"
-        >
-          {speechVal} rate
-        </label>
-      </div>
-
-      <div className="flex justify-center">
-        <input
-          id="default-range"
-          type="range"
-          min={1}
-          max={5}
-          value={speechVal}
-          step={0.01}
-          onChange={(event) => setSpeechVal(event.target.value)}
-          className="w-10/12 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
-        />
-      </div>
-      <label
-        htmlFor="default-range"
-        className="flex my-8 mx-4 text-xl font-medium text-gray-900 dark:text-white"
-      >
-        Toggle reading mode ({bionicText}):
-      </label>
-      <div className="flex justify-center mt-12">
-        <div className="mb-4">
-          <input
-            className="mr-2 mt-[0.3rem] h-3.5 w-8 appearance-none rounded-[0.4375rem] bg-neutral-300 before:pointer-events-none before:absolute before:h-3.5 before:w-3.5 before:rounded-full before:bg-transparent before:content-[''] after:absolute after:z-[2] after:-mt-[0.1875rem] after:h-5 after:w-5 after:rounded-full after:border-none after:bg-neutral-100 after:shadow-[0_0px_3px_0_rgb(0_0_0_/_7%),_0_2px_2px_0_rgb(0_0_0_/_4%)] after:transition-[background-color_0.2s,transform_0.2s] after:content-[''] checked:bg-primary checked:after:absolute checked:after:z-[2] checked:after:-mt-[3px] checked:after:ml-[1.0625rem] checked:after:h-5 checked:after:w-5 checked:after:rounded-full checked:after:border-none checked:after:bg-primary checked:after:shadow-[0_3px_1px_-2px_rgba(0,0,0,0.2),_0_2px_2px_0_rgba(0,0,0,0.14),_0_1px_5px_0_rgba(0,0,0,0.12)] checked:after:transition-[background-color_0.2s,transform_0.2s] checked:after:content-[''] hover:cursor-pointer focus:outline-none focus:ring-0 focus:before:scale-100 focus:before:opacity-[0.12] focus:before:shadow-[3px_-1px_0px_13px_rgba(0,0,0,0.6)] focus:before:transition-[box-shadow_0.2s,transform_0.2s] focus:after:absolute focus:after:z-[1] focus:after:block focus:after:h-5 focus:after:w-5 focus:after:rounded-full focus:after:content-[''] checked:focus:border-primary checked:focus:bg-primary checked:focus:before:ml-[1.0625rem] checked:focus:before:scale-100 checked:focus:before:shadow-[3px_-1px_0px_13px_#3b71ca] checked:focus:before:transition-[box-shadow_0.2s,transform_0.2s] dark:bg-neutral-600 dark:after:bg-neutral-400 dark:checked:bg-primary dark:checked:after:bg-primary dark:focus:before:shadow-[3px_-1px_0px_13px_rgba(255,255,255,0.4)] dark:checked:focus:before:shadow-[3px_-1px_0px_13px_#3b71ca]"
-            type="checkbox"
-            role="switch"
-            id="flexSwitchCheckDefault01"
-            checked={bionicVal === 1 ? true : false}
-            onChange={(event) => {
-              const isChecked = event.target.checked;
-              setBionicVal(isChecked ? 1 : 0);
-              setBionicText(isChecked ? "Bionic" : "Normal");
-            }}
-          />
-        </div>
-      </div>
-      <label
-        htmlFor="default-range"
-        className="flex my-8 mx-4 text-xl font-medium text-gray-900 dark:text-white"
-      >
-        Toggle burst mode :
-      </label>
-
-      <div className="flex justify-center mt-12">
-        <div className="mb-4">
-          <input
-            className="mr-2 mt-[0.3rem] h-3.5 w-8 appearance-none rounded-[0.4375rem] bg-neutral-300 before:pointer-events-none before:absolute before:h-3.5 before:w-3.5 before:rounded-full before:bg-transparent before:content-[''] after:absolute after:z-[2] after:-mt-[0.1875rem] after:h-5 after:w-5 after:rounded-full after:border-none after:bg-neutral-100 after:shadow-[0_0px_3px_0_rgb(0_0_0_/_7%),_0_2px_2px_0_rgb(0_0_0_/_4%)] after:transition-[background-color_0.2s,transform_0.2s] after:content-[''] checked:bg-primary checked:after:absolute checked:after:z-[2] checked:after:-mt-[3px] checked:after:ml-[1.0625rem] checked:after:h-5 checked:after:w-5 checked:after:rounded-full checked:after:border-none checked:after:bg-primary checked:after:shadow-[0_3px_1px_-2px_rgba(0,0,0,0.2),_0_2px_2px_0_rgba(0,0,0,0.14),_0_1px_5px_0_rgba(0,0,0,0.12)] checked:after:transition-[background-color_0.2s,transform_0.2s] checked:after:content-[''] hover:cursor-pointer focus:outline-none focus:ring-0 focus:before:scale-100 focus:before:opacity-[0.12] focus:before:shadow-[3px_-1px_0px_13px_rgba(0,0,0,0.6)] focus:before:transition-[box-shadow_0.2s,transform_0.2s] focus:after:absolute focus:after:z-[1] focus:after:block focus:after:h-5 focus:after:w-5 focus:after:rounded-full focus:after:content-[''] checked:focus:border-primary checked:focus:bg-primary checked:focus:before:ml-[1.0625rem] checked:focus:before:scale-100 checked:focus:before:shadow-[3px_-1px_0px_13px_#3b71ca] checked:focus:before:transition-[box-shadow_0.2s,transform_0.2s] dark:bg-neutral-600 dark:after:bg-neutral-400 dark:checked:bg-primary dark:checked:after:bg-primary dark:focus:before:shadow-[3px_-1px_0px_13px_rgba(255,255,255,0.4)] dark:checked:focus:before:shadow-[3px_-1px_0px_13px_#3b71ca]"
-            type="checkbox"
-            role="switch"
-            id="flexSwitchCheckDefault01"
-            checked={burstVal === 1 ? true : false}
-            onChange={(event) => {
-              const isChecked = event.target.checked;
-              setBurstVal(isChecked ? 1 : 0);
-            }}
-          />
-        </div>
-      </div>
-
-      <label
-        htmlFor="default-range"
-        className="flex my-8 mx-4 text-xl font-medium text-gray-900 dark:text-white"
-      >
-        Toggle AI mode:
-      </label>
-
-      <div className="flex justify-center mt-12">
-        <div className="mb-4">
-          <input
-            className="mr-2 mt-[0.3rem] h-3.5 w-8 appearance-none rounded-[0.4375rem] bg-neutral-300 before:pointer-events-none before:absolute before:h-3.5 before:w-3.5 before:rounded-full before:bg-transparent before:content-[''] after:absolute after:z-[2] after:-mt-[0.1875rem] after:h-5 after:w-5 after:rounded-full after:border-none after:bg-neutral-100 after:shadow-[0_0px_3px_0_rgb(0_0_0_/_7%),_0_2px_2px_0_rgb(0_0_0_/_4%)] after:transition-[background-color_0.2s,transform_0.2s] after:content-[''] checked:bg-primary checked:after:absolute checked:after:z-[2] checked:after:-mt-[3px] checked:after:ml-[1.0625rem] checked:after:h-5 checked:after:w-5 checked:after:rounded-full checked:after:border-none checked:after:bg-primary checked:after:shadow-[0_3px_1px_-2px_rgba(0,0,0,0.2),_0_2px_2px_0_rgba(0,0,0,0.14),_0_1px_5px_0_rgba(0,0,0,0.12)] checked:after:transition-[background-color_0.2s,transform_0.2s] checked:after:content-[''] hover:cursor-pointer focus:outline-none focus:ring-0 focus:before:scale-100 focus:before:opacity-[0.12] focus:before:shadow-[3px_-1px_0px_13px_rgba(0,0,0,0.6)] focus:before:transition-[box-shadow_0.2s,transform_0.2s] focus:after:absolute focus:after:z-[1] focus:after:block focus:after:h-5 focus:after:w-5 focus:after:rounded-full focus:after:content-[''] checked:focus:border-primary checked:focus:bg-primary checked:focus:before:ml-[1.0625rem] checked:focus:before:scale-100 checked:focus:before:shadow-[3px_-1px_0px_13px_#3b71ca] checked:focus:before:transition-[box-shadow_0.2s,transform_0.2s] dark:bg-neutral-600 dark:after:bg-neutral-400 dark:checked:bg-primary dark:checked:after:bg-primary dark:focus:before:shadow-[3px_-1px_0px_13px_rgba(255,255,255,0.4)] dark:checked:focus:before:shadow-[3px_-1px_0px_13px_#3b71ca]"
-            type="checkbox"
-            role="switch"
-            id="aiModeSwitch"
-            checked={isAIMode}
-            onChange={(event) => {
-              setIsAIMode(event.target.checked);
-            }}
-          />
-        </div>
-      </div>
-      <p className="text-center mx-4 text-sm text-gray-500 mb-6">
-        AI mode uses advanced analysis to dynamically adjust reading speed based on content complexity.
-      </p>
-
-      <div className="mt-12 mb-8">
-        <h2 className="flex my-4 mx-4 text-xl font-medium text-gray-900 dark:text-white">
-          Advanced Options
-        </h2>
-        <p className="mx-4 text-sm text-gray-500 mb-6">
-          These options allow you to fine-tune the emphasis on different types
-          of words and elements in the text.
+    <div className="bg-[#151926] min-h-screen overflow-auto pb-24" style={{ color: "rgb(209, 213, 219)" }}>
+      <div className="max-w-3xl mx-auto pt-8 px-4">
+        <h1 className="text-2xl font-bold text-white text-center">Reading Settings</h1>
+        <p className="text-center text-gray-400 text-sm mt-2 mb-6">
+          Customize your reading experience with the options below. Settings are automatically saved when changed.
         </p>
 
-        <div className="space-y-8">
-          <div>
-            <label
-              htmlFor="named-entity"
-              className="flex my-4 mx-4 text-xl font-medium text-gray-900 dark:text-white"
-            >
-              Named Entity: {namedEntityVal.toFixed(2)}x
-            </label>
-            <p className="mx-4 text-sm text-gray-500 mb-2">
-              Adjust emphasis on special words with higher contextual
-              importance.
-            </p>
-            <div className="flex justify-center">
-              <input
-                id="named-entity"
-                type="range"
-                min={0.3}
-                max={5}
-                step={0.01}
-                value={namedEntityVal}
-                onChange={(event) =>
-                  setNamedEntityVal(parseFloat(event.target.value))
-                }
-                className="w-10/12 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
-              />
-            </div>
-          </div>
+        {/* Tabs */}
+        <div className="flex mb-6 border-b border-gray-700">
+          <button
+            onClick={() => setActiveTab("basic")}
+            className={`py-2 px-5 pb-3 text-sm font-medium transition-colors ${activeTab === "basic"
+              ? "border-b-2 border-blue-500 text-blue-400"
+              : "text-gray-400 hover:text-gray-300"
+              }`}
+          >
+            Basic Settings
+          </button>
+          <button
+            onClick={() => setActiveTab("advanced")}
+            className={`py-2 px-5 pb-3 text-sm font-medium transition-colors ${activeTab === "advanced"
+              ? "border-b-2 border-blue-500 text-blue-400"
+              : "text-gray-400 hover:text-gray-300"
+              }`}
+          >
+            Advanced Settings
+          </button>
+        </div>
 
-          <div>
-            <label
-              htmlFor="content"
-              className="flex my-4 mx-4 text-xl font-medium text-gray-900 dark:text-white"
-            >
-              Content: {contentVal.toFixed(2)}x
-            </label>
-            <p className="mx-4 text-sm text-gray-500 mb-2">
-              Adjust emphasis on nouns, proper nouns, verbs, adjectives, and
-              interjections.
-            </p>
-            <div className="flex justify-center">
-              <input
-                id="content"
-                type="range"
-                min={0.3}
-                max={5}
-                step={0.01}
-                value={contentVal}
-                onChange={(event) =>
-                  setContentVal(parseFloat(event.target.value))
-                }
-                className="w-10/12 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
-              />
-            </div>
-          </div>
+        {/* Basic Settings */}
+        {activeTab === "basic" && (
+          <div className="bg-[#1c2032] rounded-lg overflow-hidden shadow-md">
+            <div className="p-6">
+              <h2 className="text-xl font-medium text-white mb-4">Reading Speed</h2>
 
-          <div>
-            <label
-              htmlFor="function"
-              className="flex my-4 mx-4 text-xl font-medium text-gray-900 dark:text-white"
-            >
-              Function: {functionVal.toFixed(2)}x
-            </label>
-            <p className="mx-4 text-sm text-gray-500 mb-2">
-              Adjust emphasis on determiners, pronouns, adpositions, auxiliary
-              verbs, and conjunctions.
-            </p>
-            <div className="flex justify-center">
-              <input
-                id="function"
-                type="range"
-                min={0.3}
-                max={5}
-                step={0.01}
-                value={functionVal}
-                onChange={(event) =>
-                  setFunctionVal(parseFloat(event.target.value))
-                }
-                className="w-10/12 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
-              />
-            </div>
-          </div>
+              <div className="mb-8">
+                <div className="flex justify-between mb-2">
+                  <span className="text-sm">Reading Speed</span>
+                  <span className="text-sm font-medium">{rangeVal} words/minute</span>
+                </div>
+                <p className="text-xs text-gray-400 mb-3">Adjust how fast the text will be displayed</p>
+                <div className="relative">
+                  <input
+                    type="range"
+                    min="100"
+                    max="1000"
+                    value={rangeVal}
+                    onChange={(e) => setRangeVal(parseInt(e.target.value))}
+                    className="w-full h-1 bg-gray-700 rounded-lg appearance-none cursor-pointer"
+                    style={{
+                      background: "rgb(55, 65, 81)",
+                    }}
+                  />
 
-          <div>
-            <label
-              htmlFor="modifiers"
-              className="flex my-4 mx-4 text-xl font-medium text-gray-900 dark:text-white"
-            >
-              Modifiers: {modifiersVal.toFixed(2)}x
-            </label>
-            <p className="mx-4 text-sm text-gray-500 mb-2">
-              Adjust emphasis on symbols and other modifying elements.
-            </p>
-            <div className="flex justify-center">
-              <input
-                id="modifiers"
-                type="range"
-                min={0.3}
-                max={5}
-                step={0.01}
-                value={modifiersVal}
-                onChange={(event) =>
-                  setModifiersVal(parseFloat(event.target.value))
-                }
-                className="w-10/12 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
-              />
+                </div>
+              </div>
+
+              <div className="mb-8">
+                <div className="flex justify-between mb-2">
+                  <span className="text-sm">Reference Words Limit</span>
+                  <span className="text-sm font-medium">{refrenceVal} words</span>
+                </div>
+                <p className="text-xs text-gray-400 mb-3">Set how many words are shown for context</p>
+                <div className="relative">
+                  <input
+                    type="range"
+                    min="1"
+                    max="20"
+                    value={refrenceVal}
+                    onChange={(e) => setRefrenceVal(parseInt(e.target.value))}
+                    className="w-full h-1 bg-gray-700 rounded-lg appearance-none cursor-pointer"
+                    style={{
+                      background: "rgb(55, 65, 81)",
+                    }}
+                  />
+
+                </div>
+              </div>
+
+              <div className="mb-8">
+                <div className="flex justify-between mb-2">
+                  <span className="text-sm">Speech Speed</span>
+                  <span className="text-sm font-medium">{parseFloat(speechVal).toFixed(2)} rate</span>
+                </div>
+                <p className="text-xs text-gray-400 mb-3">Adjust the speed of text-to-speech</p>
+                <div className="relative">
+                  <input
+                    type="range"
+                    min="1"
+                    max="5"
+                    step="0.01"
+                    value={speechVal}
+                    onChange={(e) => setSpeechVal(parseFloat(e.target.value))}
+                    className="w-full h-1 bg-gray-700 rounded-lg appearance-none cursor-pointer"
+                    style={{
+                      background: "rgb(55, 65, 81)",
+                    }}
+                  />
+
+                </div>
+              </div>
+
+              <h2 className="text-xl font-medium text-white mb-4 mt-8">Reading Mode</h2>
+
+              <div className="mb-6">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <div className="text-sm mb-1">Bionic Reading</div>
+                    <p className="text-xs text-gray-400">Highlights parts of words to improve reading speed</p>
+                  </div>
+                  <div className="relative inline-block w-12 align-middle select-none">
+                    <input
+                      type="checkbox"
+                      className="sr-only"
+                      id="bionic-toggle"
+                      checked={bionicVal === 1}
+                      onChange={(e) => setBionicVal(e.target.checked ? 1 : 0)}
+                    />
+                    <label
+                      htmlFor="bionic-toggle"
+                      className={`block overflow-hidden h-6 rounded-full cursor-pointer ${bionicVal === 1 ? 'bg-blue-500' : 'bg-gray-700'}`}
+                    >
+                      <span
+                        className={`block h-6 w-6 rounded-full bg-white shadow transform transition-transform duration-200 ease-in-out ${bionicVal === 1 ? 'translate-x-6' : 'translate-x-0'}`}
+                      />
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mb-6">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <div className="text-sm mb-1">Burst Mode</div>
+                    <p className="text-xs text-gray-400">Shows multiple words at once in rapid succession</p>
+                  </div>
+                  <div className="relative inline-block w-12 align-middle select-none">
+                    <input
+                      type="checkbox"
+                      className="sr-only"
+                      id="burst-toggle"
+                      checked={burstVal === 1}
+                      onChange={(e) => setBurstVal(e.target.checked ? 1 : 0)}
+                    />
+                    <label
+                      htmlFor="burst-toggle"
+                      className={`block overflow-hidden h-6 rounded-full cursor-pointer ${burstVal === 1 ? 'bg-blue-500' : 'bg-gray-700'}`}
+                    >
+                      <span
+                        className={`block h-6 w-6 rounded-full bg-white shadow transform transition-transform duration-200 ease-in-out ${burstVal === 1 ? 'translate-x-6' : 'translate-x-0'}`}
+                      />
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mb-6">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <div className="text-sm mb-1">AI Mode</div>
+                    <p className="text-xs text-gray-400">Dynamically adjusts reading speed based on complexity</p>
+                  </div>
+                  <div className="relative inline-block w-12 align-middle select-none">
+                    <input
+                      type="checkbox"
+                      className="sr-only"
+                      id="ai-toggle"
+                      checked={isAIMode}
+                      onChange={(e) => setIsAIMode(e.target.checked)}
+                    />
+                    <label
+                      htmlFor="ai-toggle"
+                      className={`block overflow-hidden h-6 rounded-full cursor-pointer ${isAIMode ? 'bg-blue-500' : 'bg-gray-700'}`}
+                    >
+                      <span
+                        className={`block h-6 w-6 rounded-full bg-white shadow transform transition-transform duration-200 ease-in-out ${isAIMode ? 'translate-x-6' : 'translate-x-0'}`}
+                      />
+                    </label>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
+        )}
+
+        {/* Advanced Settings */}
+        {activeTab === "advanced" && (
+          <div className="bg-[#1c2032] rounded-lg overflow-hidden shadow-md">
+            <div className="p-6">
+              <h2 className="text-xl font-medium text-white mb-3">Emphasis Controls</h2>
+              <p className="text-sm text-gray-400 mb-6">
+                Fine-tune how different types of words are emphasized during reading.
+              </p>
+
+              <div className="mb-8">
+                <div className="flex justify-between mb-2">
+                  <span className="text-sm">Named Entity Emphasis</span>
+                  <span className="text-sm font-medium">{namedEntityVal.toFixed(2)}×</span>
+                </div>
+                <p className="text-xs text-gray-400 mb-3">Adjust emphasis on special words with higher contextual importance</p>
+                <div className="relative">
+                  <input
+                    type="range"
+                    min="0.3"
+                    max="5"
+                    step="0.01"
+                    value={namedEntityVal}
+                    onChange={(e) => setNamedEntityVal(parseFloat(e.target.value))}
+                    className="w-full h-1 bg-gray-700 rounded-lg appearance-none cursor-pointer"
+                    style={{
+                      background: "rgb(55, 65, 81)",
+                    }}
+                  />
+
+                </div>
+              </div>
+
+              <div className="mb-8">
+                <div className="flex justify-between mb-2">
+                  <span className="text-sm">Content Emphasis</span>
+                  <span className="text-sm font-medium">{contentVal.toFixed(2)}×</span>
+                </div>
+                <p className="text-xs text-gray-400 mb-3">Adjust emphasis on nouns, proper nouns, verbs, adjectives, and interjections</p>
+                <div className="relative">
+                  <input
+                    type="range"
+                    min="0.3"
+                    max="5"
+                    step="0.01"
+                    value={contentVal}
+                    onChange={(e) => setContentVal(parseFloat(e.target.value))}
+                    className="w-full h-1 bg-gray-700 rounded-lg appearance-none cursor-pointer"
+                    style={{
+                      background: "rgb(55, 65, 81)",
+                    }}
+                  />
+
+                </div>
+              </div>
+
+              <div className="mb-8">
+                <div className="flex justify-between mb-2">
+                  <span className="text-sm">Function Emphasis</span>
+                  <span className="text-sm font-medium">{functionVal.toFixed(2)}×</span>
+                </div>
+                <p className="text-xs text-gray-400 mb-3">Adjust emphasis on determiners, pronouns, adpositions, auxiliary verbs, and conjunctions</p>
+                <div className="relative">
+                  <input
+                    type="range"
+                    min="0.3"
+                    max="5"
+                    step="0.01"
+                    value={functionVal}
+                    onChange={(e) => setFunctionVal(parseFloat(e.target.value))}
+                    className="w-full h-1 bg-gray-700 rounded-lg appearance-none cursor-pointer"
+                    style={{
+                      background: "rgb(55, 65, 81)",
+                    }}
+                  />
+
+                </div>
+              </div>
+
+              <div className="mb-8">
+                <div className="flex justify-between mb-2">
+                  <span className="text-sm">Modifiers Emphasis</span>
+                  <span className="text-sm font-medium">{modifiersVal.toFixed(2)}×</span>
+                </div>
+                <p className="text-xs text-gray-400 mb-3">Adjust emphasis on symbols and other modifying elements</p>
+                <div className="relative">
+                  <input
+                    type="range"
+                    min="0.3"
+                    max="5"
+                    step="0.01"
+                    value={modifiersVal}
+                    onChange={(e) => setModifiersVal(parseFloat(e.target.value))}
+                    className="w-full h-1 bg-gray-700 rounded-lg appearance-none cursor-pointer"
+                    style={{
+                      background: "rgb(55, 65, 81)",
+                    }}
+                  />
+
+                </div>
+              </div>
+
+              <div className="mb-6">
+                <div className="flex justify-between mb-2">
+                  <span className="text-sm">Word Length Multiplier</span>
+                  <span className="text-sm font-medium">{wordLengthMultiplierVal.toFixed(2)}×</span>
+                </div>
+                <p className="text-xs text-gray-400 mb-3">Increase delay for longer words (higher values = more time for longer words)</p>
+                <div className="relative">
+                  <input
+                    type="range"
+                    min="0.3"
+                    max="3"
+                    step="0.01"
+                    value={wordLengthMultiplierVal}
+                    onChange={(e) => setWordLengthMultiplierVal(parseFloat(e.target.value))}
+                    className="w-full h-1 bg-gray-700 rounded-lg appearance-none cursor-pointer"
+                    style={{
+                      background: "rgb(55, 65, 81)",
+                    }}
+                  />
+
+                </div>
+              </div>
+
+              <div className="mb-6">
+                <div className="flex justify-between mb-2">
+                  <span className="text-sm">Per-Character Delay Factor</span>
+                  <span className="text-sm font-medium">{(perCharacterDelayVal * 100).toFixed(0)}%</span>
+                </div>
+                <p className="text-xs text-gray-400 mb-3">How much extra time each additional character adds (higher values = steeper increase for longer words)</p>
+                <div className="relative">
+                  <input
+                    type="range"
+                    min="0.01"
+                    max="0.5"
+                    step="0.01"
+                    value={perCharacterDelayVal}
+                    onChange={(e) => setPerCharacterDelayVal(parseFloat(e.target.value))}
+                    className="w-full h-1 bg-gray-700 rounded-lg appearance-none cursor-pointer"
+                    style={{
+                      background: "rgb(55, 65, 81)",
+                    }}
+                  />
+
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <div className="flex justify-between items-center mt-6 mb-20">
+          <button
+            onClick={resetToDefaults}
+            className="px-4 py-2 text-sm bg-gray-700 hover:bg-gray-600 text-white rounded-md transition-colors"
+          >
+            Reset to Defaults
+          </button>
+          <p className="text-sm text-gray-400">
+            {isSaving ? "Saving..." : settingsChanged ? "Changes not yet saved..." : "Settings saved"}
+          </p>
         </div>
       </div>
-      <div className="flex my-10 py-10 justify-center">
-        <button
-          type="button"
-          onClick={saveSettings}
-          className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"
-        >
-          Set Defaults
-        </button>
-      </div>
-    </>
+    </div>
   );
 }
 
