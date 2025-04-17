@@ -13,17 +13,17 @@ const userRef = collection(db, "users");
 
 // Default settings object
 const DEFAULT_SETTINGS = {
-  defaultSpeed: 240,
+  defaultSpeed: 350,
   defaultSpeech: 3,
   bionic: 0,
   burst: 0,
   refrence: 10,
   namedEntity: 3.0,
   content: 2.0,
-  function: 0.80,
-  modifiers: 1.0,
+  function: 0.75,
+  modifiers: 2.0,
   wordLengthMultiplier: 1.5,
-  perCharacterDelay: 0.08,
+  perCharacterDelay: 0.1,
   isAIMode: true,
 };
 
